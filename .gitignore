@@ -3,3 +3,4 @@
 .clj/*-kongo
 .calva/*
 .clj-kondo/*
+.nrepl-port
