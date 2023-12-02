@@ -1,0 +1,5 @@
+.cpcache/*
+.lsp/*
+.clj/*-kongo
+.calva/*
+.clj-kondo/*
