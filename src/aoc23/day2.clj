@@ -62,7 +62,9 @@
   ;; example 2
   (assert (= 2286 (part2 exp1-input)))
   ;; part 2
-  (assert (= 74804 (part2 part1-input))))
+  (assert (= 74804 (part2 part1-input)))
+  ;;
+  )
 
 
 

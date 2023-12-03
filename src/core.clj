@@ -1,10 +1,14 @@
-(ns core)
+(ns core
+  (:require [clojure.pprint :as pp]))
 
 (defn map-key [fun coll]
   (map (fn [[key value]] [(fun key) value]) coll))
 
 (defn filter-by-key [fun coll]
-  (filter (fn [[key value]] [(fun key) value]) coll))
+  (filter (fn [[key _]] (fun key)) coll))
+
+(defn filter-by-value [fun coll]
+  (filter (fn [[_ value]] (fun value)) coll))
 
 (defn max-by [fun coll]
   (apply max (map fun coll)))
@@ -24,5 +28,5 @@
    [(dec x) (dec y)] [x (dec y)] [(inc x) (dec y)]])
 
 (defn insp
-  ([v] (clojure.pprint/pprint v) v)
-  ([id v] (clojure.pprint/pprint {id v}) v))
+  ([v] (pp/pprint v) v)
+  ([id v] (pp/pprint {id v}) v))

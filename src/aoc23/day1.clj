@@ -32,9 +32,9 @@
        (re-pattern)))
 
 (def re-digits (create-digits-re digits))
-(def reverse-re-digits 
-  (->> (map-key str/reverse digits) 
-       (into {}) 
+(def reverse-re-digits
+  (->> (map-key str/reverse digits)
+       (into {})
        (create-digits-re)))
 
 (defn- to-number-digits [mixed-digits]
@@ -64,6 +64,8 @@
   ;; example 2
   (assert (= 281 (part2 exp2-input)))
   ;; part 2
-  (assert (= 54265 (part2 part1-input))))
+  (assert (= 54265 (part2 part1-input)))
+  ;;
+  )
 
 

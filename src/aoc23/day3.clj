@@ -1,6 +1,6 @@
 (ns aoc23.day3
   (:require [clojure.string :as str]
-            [core :refer [parse-int filter-by-key flatten-once surrounding-xy]]
+            [core :as c]
             [clojure.set :refer [intersection]]))
 
 (def exp1-input (slurp "./inputs/day3/exp1.txt"))
@@ -8,39 +8,41 @@
 
 (defn- symbols-xy [items]
   (->> items
-       (filter (fn [[k _]] (string? k)))
-       (map (fn [[_ [v]]] v))
-       (mapcat surrounding-xy)))
+       (c/filter-by-key string?)
+       (map (comp first second))
+       (mapcat c/surrounding-xy)))
 
-(defn- number-surrounded-by-symbol [xy-xy-positions symbol-xy-xy-positions]
-  (not-empty (intersection (set xy-xy-positions) (set symbol-xy-xy-positions))))
+(defn- number-surrounded-by-symbol [xy-positions symbol-xy-positions]
+  (-> (set xy-positions)
+      (intersection (set symbol-xy-positions))
+      (not-empty)))
 
 (defn- keep-part-numbers [items]
-  (->> items
-       (filter-by-key int?)
-       (keep (fn [[item xy-xy-positions]]
-               (when (number-surrounded-by-symbol xy-xy-positions (symbols-xy items))
-                 item)))))
+  (let [symbols-xy (symbols-xy items)]
+    (->> items
+         (c/filter-by-key int?)
+         (c/filter-by-value #(number-surrounded-by-symbol %1 symbols-xy))
+         (map first))))
 
 (defn- number-xy-positions [start-idx idy item acc]
   (let [x-xy-positions (map #(+ start-idx %) (range (count item)))
         next-x (inc (last x-xy-positions))
         int-item (Integer/parseInt item)
-        xy-xy-positions (mapv (fn [x] [x idy]) x-xy-positions)
-        acc (conj acc [int-item xy-xy-positions])]
+        xy-positions (mapv (fn [x] [x idy]) x-xy-positions)
+        acc (conj acc [int-item xy-positions])]
     [next-x acc]))
 
 
 (defn- item-and-xy-positions [[idx acc] item idy]
   (cond
-    ;; we ignore .
+    ;; we ignore "." and increment the idx
     (= item ".") [(inc idx) acc]
-    ;; if item is bigger than 1 position it's a number
-    (int? (parse-int item)) (number-xy-positions idx idy item acc)
+    ;; if it's a number, we parse it, and increment idx depending on the size of number
+    (int? (c/parse-int item)) (number-xy-positions idx idy item acc)
     ;; if symbol is one caracter we add it's only positions
     :else [(inc idx) (conj acc [item [[idx idy]]])]))
 
-(defn parse-line-to-items-and-xy-xy-positions [idy line]
+(defn parse-line-to-items-and-xy-positions [idy line]
   (->> line
        (re-seq #"\d+|\.|.")
        (reduce #(item-and-xy-positions %1 %2 idy) [0 []])
@@ -49,8 +51,8 @@
 
 (defn- parse-input [inp]
   (->> (str/split-lines inp)
-       (keep-indexed parse-line-to-items-and-xy-xy-positions)
-       (flatten-once)))
+       (keep-indexed parse-line-to-items-and-xy-positions)
+       (c/flatten-once)))
 
 (defn part1 [inp]
   (->> (parse-input inp)
@@ -59,14 +61,14 @@
 
 (defn- gear-xy-positions [items]
   (->> items
-       (filter (fn [[k _]] (= "*" k)))
-       (map (fn [[_ [v]]] v))
+       (c/filter-by-key #(= "*" %))
+       (map (comp first second))
        (into #{})))
 
 (defn- number-surroundings [items]
   (->> items
-       (filter (fn [[k _]] (int? k)))
-       (map (fn [[k v]] [k (into #{} (mapcat surrounding-xy v))]))))
+       (c/filter-by-key int?)
+       (map (fn [[k v]] [k (into #{} (mapcat c/surrounding-xy v))]))))
 
 (defn- number-surrounded-by-gear [[number surrounding-xy-positions] gear-position]
   (when (surrounding-xy-positions gear-position)
