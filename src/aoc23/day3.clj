@@ -1,7 +1,7 @@
 (ns aoc23.day3
   (:require [clojure.string :as str]
             [core :as c]
-            [clojure.set :refer [intersection]]))
+            [clojure.set :as set]))
 
 (def exp1-input (slurp "./inputs/day3/exp1.txt"))
 (def part1-input (slurp "./inputs/day3/part1.txt"))
@@ -14,7 +14,7 @@
 
 (defn- number-surrounded-by-symbol [xy-positions symbol-xy-positions]
   (-> (set xy-positions)
-      (intersection (set symbol-xy-positions))
+      (set/intersection (set symbol-xy-positions))
       (not-empty)))
 
 (defn- keep-part-numbers [items]
