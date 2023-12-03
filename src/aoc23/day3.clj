@@ -1,61 +1,99 @@
 (ns aoc23.day3
   (:require [clojure.string :as str]
-            [core :refer [insp flatten-once]]
+            [core :refer [parse-int filter-by-key flatten-once surrounding-xy]]
             [clojure.set :refer [intersection]]))
 
-;; don't forget to add the text in there.
 (def exp1-input (slurp "./inputs/day3/exp1.txt"))
 (def part1-input (slurp "./inputs/day3/part1.txt"))
 
-(defn surroundings [[x y]]
-  [[(dec x) y] [(dec x) (inc y)] [(dec x) (dec y)]
-   [x (inc y)]                   [x (dec y)]
-   [(inc x) y] [(inc x) (dec y)] [(inc x) (inc y)]])
+(defn- symbols-xy [items]
+  (->> items
+       (filter (fn [[k _]] (string? k)))
+       (map (fn [[_ [v]]] v))
+       (mapcat surrounding-xy)))
 
-(defn try-int [int]
-  (try (Integer/parseInt int)
-       (catch Exception e nil)))
+(defn- number-surrounded-by-symbol [xy-xy-positions symbol-xy-xy-positions]
+  (not-empty (intersection (set xy-xy-positions) (set symbol-xy-xy-positions))))
 
-(defn keep-surrounded [items]
-  (let [positions-with-symbol (->> items
-                                   (filter (fn [[k _]] (string? k)))
-                                   (map (fn [[_ [v]]] v))
-                                   (mapcat surroundings)
-                                   (into #{}))
-        _ (insp positions-with-symbol)
-        number-and-pos (filter (fn [[k _]] (not (string? k))) items)]
-    (->> number-and-pos
-         (keep (fn [[item positions]]
-                 (let [around (into #{} positions)]
-                   (when (not-empty (intersection around positions-with-symbol))
-                     item)))))))
+(defn- keep-part-numbers [items]
+  (->> items
+       (filter-by-key int?)
+       (keep (fn [[item xy-xy-positions]]
+               (when (number-surrounded-by-symbol xy-xy-positions (symbols-xy items))
+                 item)))))
 
-(assert (= #{[-1 -1]  [0 -1] [1 -1]
-             [-1  0]         [1  0]
-             [-1  1]  [0  1] [1  1]} (into #{} (surroundings [0 0]))))
+(defn- number-xy-positions [start-idx idy item acc]
+  (let [x-xy-positions (map #(+ start-idx %) (range (count item)))
+        next-x (inc (last x-xy-positions))
+        int-item (Integer/parseInt item)
+        xy-xy-positions (mapv (fn [x] [x idy]) x-xy-positions)
+        acc (conj acc [int-item xy-xy-positions])]
+    [next-x acc]))
 
 
-(defn part1 [inp]
+(defn- item-and-xy-positions [[idx acc] item idy]
+  (cond
+    ;; we ignore .
+    (= item ".") [(inc idx) acc]
+    ;; if item is bigger than 1 position it's a number
+    (int? (parse-int item)) (number-xy-positions idx idy item acc)
+    ;; if symbol is one caracter we add it's only positions
+    :else [(inc idx) (conj acc [item [[idx idy]]])]))
+
+(defn parse-line-to-items-and-xy-xy-positions [idy line]
+  (->> line
+       (re-seq #"\d+|\.|.")
+       (reduce #(item-and-xy-positions %1 %2 idy) [0 []])
+       (second)
+       (not-empty)))
+
+(defn- parse-input [inp]
   (->> (str/split-lines inp)
-       (keep-indexed (fn [idy line]
-                       (not-empty (second (reduce (fn [[idx acc] item]
-                                                    (cond
-                                                      (= item ".") [(inc idx) acc]
-                                                      (int? (try-int item)) (let [x-positions (range (count item))
-                                                                                  last-x (+ idx (apply max x-positions))
-                                                                                  item (or (try-int item) item)
-                                                                                  xy-positions (mapv (fn [i] [(+ idx i) idy]) x-positions)]
-                                                                              [(inc last-x) (conj acc [item xy-positions])])
-                                                      :else [(inc idx) (conj acc [item [[idx idy]]])]))
-                                                  [0 []]
-                                                  (re-seq #"\d+|\.|." line))))))
+       (keep-indexed parse-line-to-items-and-xy-xy-positions)
        (flatten-once)))
 
+(defn part1 [inp]
+  (->> (parse-input inp)
+       (keep-part-numbers)
+       (apply +)))
 
+(defn- gear-xy-positions [items]
+  (->> items
+       (filter (fn [[k _]] (= "*" k)))
+       (map (fn [[_ [v]]] v))
+       (into #{})))
 
-(apply + (keep-surrounded (part1 part1-input)))
+(defn- number-surroundings [items]
+  (->> items
+       (filter (fn [[k _]] (int? k)))
+       (map (fn [[k v]] [k (into #{} (mapcat surrounding-xy v))]))))
 
+(defn- number-surrounded-by-gear [[number surrounding-xy-positions] gear-position]
+  (when (surrounding-xy-positions gear-position)
+    number))
 
-(part1 "...............*......171*......................714.....543............737.....372.............941.............113..*....=.......853....733.")
+(defn- multiply-2-numbers-connected-by-gear [gear-position numbers-surroundings]
+  (let [connected-by-a-gear (keep #(number-surrounded-by-gear %1 gear-position) numbers-surroundings)]
+    (when (= 2 (count connected-by-a-gear))
+      (apply * connected-by-a-gear))))
 
-;;wrong 515436
+(defn- keep-gears-that-multiply-2-numbers [items]
+  (keep #(multiply-2-numbers-connected-by-gear % (number-surroundings items)) (gear-xy-positions items)))
+
+(defn part2 [inp]
+  (->> (parse-input inp)
+       (keep-gears-that-multiply-2-numbers)
+       (apply +)))
+
+(comment
+  ;; exp 1
+  (assert (= 4361 (part1 exp1-input)))
+  ;; part 1
+  (assert (= 533775 (part1 part1-input)))
+  ;; exp 2
+  (assert (= 467835 (part2 exp1-input)))
+  ;; part 2
+  (assert (= 78236071 (part2 part1-input)))
+  ;;
+  )
+  
