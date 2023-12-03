@@ -1,42 +1,41 @@
 (ns aoc23.day1
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [core :refer [map-key]]))
 
 (def exp1-input (slurp "./inputs/day1/exp1.txt"))
 (def exp2-input (slurp "./inputs/day1/exp2.txt"))
 (def part1-input (slurp "./inputs/day1/part1.txt"))
 
-(def digits #"\d")
-
 (defn part1 [inp]
   (->> (str/split inp #"\n")
-       (map #(re-seq digits %))
+       (map #(re-seq #"\d" %))
        (map #(str/join [(first %) (last %)]))
        (map #(Integer/parseInt %))
        (apply +)))
 
-(def digits-remap {"one" "1"
-                   "two" "2"
-                   "three" "3"
-                   "four" "4"
-                   "five" "5"
-                   "six" "6"
-                   "seven" "7"
-                   "eight" "8"
-                   "nine" "9"})
+(def digits
+  "Map the text of digit to it's number"
+  {"one" "1"
+   "two" "2"
+   "three" "3"
+   "four" "4"
+   "five" "5"
+   "six" "6"
+   "seven" "7"
+   "eight" "8"
+   "nine" "9"})
 
-(def reverse-digits-remap (->> digits-remap
-                               (map (fn [[k v]] [(str/reverse k) v]))
-                               (into {})))
-
-(defn create-re [digits]
-  (->> digits
-       (keys)
+(defn create-digits-re [digits]
+  (->> (keys digits)
        (cons "\\d")
        (str/join "|")
        (re-pattern)))
 
-(def re-digits (create-re digits-remap))
-(def reverse-re-digits (create-re reverse-digits-remap))
+(def re-digits (create-digits-re digits))
+(def reverse-re-digits 
+  (->> (map-key str/reverse digits) 
+       (into {}) 
+       (create-digits-re)))
 
 (defn- to-number-digits [mixed-digits]
   (map #(get digits % %) mixed-digits))
@@ -45,14 +44,13 @@
   (re-find re-digits text))
 
 (defn- find-last [text]
-  (->> text
-       (str/reverse)
+  (->> (str/reverse text)
        (re-find reverse-re-digits)
        (str/reverse)))
 
 (defn part2 [inp]
-  (->> (str/split inp #"\n")
-       (map (fn [line] [(find-first line) (find-last line)]))
+  (->> (str/split-lines inp)
+       (map (juxt find-first find-last))
        (map to-number-digits)
        (map #(str/join "" %))
        (map #(Integer/parseInt %))
