@@ -5,17 +5,17 @@
 (def exp1-input (slurp "./inputs/day4/exp1.txt"))
 (def part1-input (slurp "./inputs/day4/part1.txt"))
 
-(defn parse-digits [txt]
+(defn- parse-digits [txt]
   (->> (re-seq #"\d+" txt)
        (map #(Integer/parseInt %))))
 
-(defn calc-points [my-wins]
+(defn- calc-points [my-wins]
   (if-not (= (count my-wins) 0)
     (->> (repeat (count my-wins) 1)
          (reduce #(* 2 %1 %2) 1/2))
     0))
 
-(defn parse-input [inp]
+(defn- parse-input [inp]
   (->> (str/split-lines inp)
        (map #(re-seq #"(.*):(.*)\|(.*)" %))
        (map (fn [[[_line card-num win-nums my-nums]]]
@@ -34,26 +34,27 @@
        (map :scorecard/points)
        (apply +)))
 
-(defn inc-number-of-copies-of-next-n-scorecard [scorecards scorecard-to-inc amount]
+(defn- inc-number-of-copies-of-next-n-scorecard [scorecards scorecard-to-inc amount]
   (reduce (fn [scorecards scorecard-to-inc]
             (update-in scorecards [scorecard-to-inc :scorecard/number-of-copies] #(+ amount %)))
           scorecards
           scorecard-to-inc))
 
-(defn recalc-next-scorecard-number-of-copies [scorecards id]
-  (let [win-count (get-in scorecards [id :scorecard/winning-numbers-count])
-        number-of-copies (get-in scorecards [id :scorecard/number-of-copies])
-        scorecard-to-inc (range (inc id) (inc (+ id win-count)))]
-    (inc-number-of-copies-of-next-n-scorecard scorecards
-                                              scorecard-to-inc
-                                              number-of-copies)))
-(defn recalc-number-of-copies [scorecards]
-  (reduce recalc-next-scorecard-number-of-copies scorecards (keys scorecards)))
+(defn- recalc-number-of-copies [scorecards]
+  (reduce (fn [scorecards id]
+            (let [win-count (get-in scorecards [id :scorecard/winning-numbers-count])
+                  number-of-copies (get-in scorecards [id :scorecard/number-of-copies])
+                  scorecard-to-inc (range (inc id) (inc (+ id win-count)))]
+              (inc-number-of-copies-of-next-n-scorecard scorecards
+                                                        scorecard-to-inc
+                                                        number-of-copies)))
+          scorecards
+          (keys scorecards)))
 
 (defn part2 [inp]
   (->> (parse-input inp)
        (recalc-number-of-copies)
-       (map second)
+       (vals)
        (map :scorecard/number-of-copies)
        (apply +)))
 
