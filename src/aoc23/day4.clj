@@ -19,35 +19,30 @@
   (->> (str/split-lines inp)
        (map #(re-seq #"(.*):(.*)\|(.*)" %))
        (map (fn [[[_line card-num win-nums my-nums]]]
-              (let [id (first (parse-digits card-num))
+              (let [card-id (first (parse-digits card-num))
                     win-nums (set (parse-digits win-nums))
                     my-nums (set (parse-digits my-nums))
-                    my-wins (set/intersection win-nums my-nums)
-                    win-count (count my-wins)
-                    my-points (calc-points my-wins)]
-                [id {:id id
-                     :number-of-copies 1
-                     :win-nums win-nums
-                     :my-nums my-wins
-                     :win-count win-count
-                     :my-points my-points}])))
+                    my-wins (set/intersection win-nums my-nums)]
+                [card-id {:scorecard/number-of-copies 1
+                          :scorecard/points (calc-points my-wins)
+                          :scorecard/winning-numbers-count (count my-wins)}])))
        (into (sorted-map))))
 
 (defn part1 [inp]
   (->> (parse-input inp)
-       (map second)
-       (map :my-points)
+       (vals)
+       (map :scorecard/points)
        (apply +)))
 
 (defn inc-number-of-copies-of-next-n-scorecard [scorecards scorecard-to-inc amount]
   (reduce (fn [scorecards scorecard-to-inc]
-            (update-in scorecards [scorecard-to-inc :number-of-copies] #(+ amount %)))
+            (update-in scorecards [scorecard-to-inc :scorecard/number-of-copies] #(+ amount %)))
           scorecards
           scorecard-to-inc))
 
 (defn recalc-next-scorecard-number-of-copies [scorecards id]
-  (let [win-count (get-in scorecards [id :win-count])
-        number-of-copies (get-in scorecards [id :number-of-copies])
+  (let [win-count (get-in scorecards [id :scorecard/winning-numbers-count])
+        number-of-copies (get-in scorecards [id :scorecard/number-of-copies])
         scorecard-to-inc (range (inc id) (inc (+ id win-count)))]
     (inc-number-of-copies-of-next-n-scorecard scorecards
                                               scorecard-to-inc
@@ -59,7 +54,7 @@
   (->> (parse-input inp)
        (recalc-number-of-copies)
        (map second)
-       (map :number-of-copies)
+       (map :scorecard/number-of-copies)
        (apply +)))
 
 (assert (= 13 (part1 exp1-input)))
