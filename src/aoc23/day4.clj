@@ -23,39 +23,41 @@
                     win-nums (set (parse-digits win-nums))
                     my-nums (set (parse-digits my-nums))
                     my-wins (set/intersection win-nums my-nums)]
-                [card-id {:scorecard/number-of-copies 1
-                          :scorecard/points (calc-points my-wins)
-                          :scorecard/winning-numbers-count (count my-wins)}])))
+                [card-id {:scratchcard/number-of-copies 1
+                          :scratchcard/points (calc-points my-wins)
+                          :scratchcard/winning-numbers-count (count my-wins)}])))
        (into (sorted-map))))
 
 (defn part1 [inp]
   (->> (parse-input inp)
        (vals)
-       (map :scorecard/points)
+       (map :scratchcard/points)
        (apply +)))
 
-(defn- inc-number-of-copies-of-next-n-scorecard [scorecards scorecard-to-inc amount]
-  (reduce (fn [scorecards scorecard-to-inc]
-            (update-in scorecards [scorecard-to-inc :scorecard/number-of-copies] #(+ amount %)))
-          scorecards
-          scorecard-to-inc))
+(defn- inc-number-of-copies-of-scratchcards [all-scratchcards scratchcards-to-inc amount]
+  (reduce (fn [all-scratchcards scratchcard-to-inc]
+            (update-in all-scratchcards
+                       [scratchcard-to-inc :scratchcard/number-of-copies]
+                       #(+ amount %)))
+          all-scratchcards
+          scratchcards-to-inc))
 
-(defn- recalc-number-of-copies [scorecards]
-  (reduce (fn [scorecards id]
-            (let [win-count (get-in scorecards [id :scorecard/winning-numbers-count])
-                  number-of-copies (get-in scorecards [id :scorecard/number-of-copies])
-                  scorecard-to-inc (range (inc id) (inc (+ id win-count)))]
-              (inc-number-of-copies-of-next-n-scorecard scorecards
-                                                        scorecard-to-inc
-                                                        number-of-copies)))
-          scorecards
-          (keys scorecards)))
+(defn- recalc-number-of-copies [all-scratchcards]
+  (reduce (fn [all-scratchcards scratchcard-id]
+            (let [win-count (get-in all-scratchcards [scratchcard-id :scratchcard/winning-numbers-count])
+                  number-of-copies (get-in all-scratchcards [scratchcard-id :scratchcard/number-of-copies])
+                  scratchcard-to-inc (range (inc scratchcard-id) (inc (+ scratchcard-id win-count)))]
+              (inc-number-of-copies-of-scratchcards all-scratchcards
+                                                    scratchcard-to-inc
+                                                    number-of-copies)))
+          all-scratchcards
+          (keys all-scratchcards)))
 
 (defn part2 [inp]
   (->> (parse-input inp)
        (recalc-number-of-copies)
        (vals)
-       (map :scorecard/number-of-copies)
+       (map :scratchcard/number-of-copies)
        (apply +)))
 
 (assert (= 13 (part1 exp1-input)))
