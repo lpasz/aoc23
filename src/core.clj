@@ -13,6 +13,9 @@
 (defn max-by [fun coll]
   (apply max (map fun coll)))
 
+(defn min-by [fun coll]
+  (apply min (map fun coll)))
+
 (defn flatten-once [coll]
   (mapcat identity coll))
 
