@@ -1,17 +1,11 @@
 (ns aoc23.day1
+  "Trebuchet?!"
   (:require [clojure.string :as str]
             [core :refer [map-key]]))
 
 (def exp1-input (slurp "./inputs/day1/exp1.txt"))
 (def exp2-input (slurp "./inputs/day1/exp2.txt"))
 (def part1-input (slurp "./inputs/day1/part1.txt"))
-
-(defn part1 [inp]
-  (->> (str/split inp #"\n")
-       (map #(re-seq #"\d" %))
-       (map #(str/join [(first %) (last %)]))
-       (map #(Integer/parseInt %))
-       (apply +)))
 
 (def digits
   "Map the text of digit to it's number"
@@ -25,7 +19,7 @@
    "eight" "8"
    "nine" "9"})
 
-(defn create-digits-re [digits]
+(defn- create-digits-re [digits]
   (->> (keys digits)
        (cons "\\d")
        (str/join "|")
@@ -47,6 +41,13 @@
   (->> (str/reverse text)
        (re-find reverse-re-digits)
        (str/reverse)))
+
+(defn part1 [inp]
+  (->> (str/split inp #"\n")
+       (map #(re-seq #"\d" %))
+       (map #(str/join [(first %) (last %)]))
+       (map #(Integer/parseInt %))
+       (apply +)))
 
 (defn part2 [inp]
   (->> (str/split-lines inp)

@@ -1,4 +1,5 @@
 (ns aoc23.day3
+  "Gear Ratios"
   (:require [clojure.string :as str]
             [core :as c]
             [clojure.set :as set]))
@@ -42,7 +43,7 @@
     ;; if symbol is one caracter we add it's only positions
     :else [(inc idx) (conj acc [item [[idx idy]]])]))
 
-(defn parse-line-to-items-and-xy-positions [idy line]
+(defn- parse-line-to-items-and-xy-positions [idy line]
   (->> line
        (re-seq #"\d+|\.|.")
        (reduce #(item-and-xy-positions %1 %2 idy) [0 []])
@@ -53,11 +54,6 @@
   (->> (str/split-lines inp)
        (keep-indexed parse-line-to-items-and-xy-positions)
        (c/flatten-once)))
-
-(defn part1 [inp]
-  (->> (parse-input inp)
-       (keep-part-numbers)
-       (apply +)))
 
 (defn- gear-xy-positions [items]
   (->> items
@@ -81,6 +77,11 @@
 
 (defn- keep-gears-that-multiply-2-numbers [items]
   (keep #(multiply-2-numbers-connected-by-gear % (number-surroundings items)) (gear-xy-positions items)))
+
+(defn part1 [inp]
+  (->> (parse-input inp)
+       (keep-part-numbers)
+       (apply +)))
 
 (defn part2 [inp]
   (->> (parse-input inp)

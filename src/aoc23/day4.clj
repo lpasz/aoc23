@@ -1,4 +1,5 @@
 (ns aoc23.day4
+  "Scratchcards"
   (:require [clojure.string :as str]
             [clojure.set :as set]))
 
@@ -28,12 +29,6 @@
                           :scratchcard/winning-numbers-count (count my-wins)}])))
        (into (sorted-map))))
 
-(defn part1 [inp]
-  (->> (parse-input inp)
-       (vals)
-       (map :scratchcard/points)
-       (apply +)))
-
 (defn- inc-number-of-copies-of-scratchcards [all-scratchcards scratchcards-to-inc amount]
   (reduce (fn [all-scratchcards scratchcard-to-inc]
             (update-in all-scratchcards
@@ -52,6 +47,12 @@
                                                     number-of-copies)))
           all-scratchcards
           (keys all-scratchcards)))
+
+(defn part1 [inp]
+  (->> (parse-input inp)
+       (vals)
+       (map :scratchcard/points)
+       (apply +)))
 
 (defn part2 [inp]
   (->> (parse-input inp)

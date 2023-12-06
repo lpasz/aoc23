@@ -1,29 +1,29 @@
 (ns aoc23.day5
+  "If You Give A Seed A Fertilizer"
   (:require [clojure.string :as str]
-            [clojure.set :as set]
             [core :as c]))
 
 (def exp1-input (slurp "./inputs/day5/exp1.txt"))
 (def part1-input (slurp "./inputs/day5/part1.txt"))
 
-(defn in-between-range [[start range-size]]
+(defn- in-between-range [[start range-size]]
   #(or (= start %) (< start % (+ start range-size))))
 
-(defn from-to [[start1 start2 range-size]]
+(defn- from-to [[start1 start2 range-size]]
   #(when ((in-between-range [start2 range-size]) %)
      (+ start1 (- % start2))))
 
-(defn to-from  [[start1 start2 range-size]]
+(defn- to-from  [[start1 start2 range-size]]
   #(when ((in-between-range [start1 range-size]) %)
      (+ start2 (- % start1))))
 
-(defn to-funcs [lines from-to-fn]
+(defn- to-funcs [lines from-to-fn]
   (->> (rest lines)
        (map #(re-seq #"\d+" %))
        (map (fn [nums] (map biginteger nums)))
        (map from-to-fn)))
 
-(defn parse-input [inp]
+(defn- parse-input [inp]
   (let [[[seeds]
          seed-to-soil
          soil-to-fertilizer
@@ -53,16 +53,18 @@
      :location-to-humidity (to-funcs humidity-to-location to-from)}))
 
 
-(defn gets [coll-fn k dv]
+(defn- gets [coll-fn k dv]
   (or (->> coll-fn (keep #(% k)) (first)) dv))
 
-(defn seed-to-location [seed {:keys [seed-to-soil
-                                     soil-to-fertilizer
-                                     fertilizer-to-water
-                                     water-to-light
-                                     light-to-temperature
-                                     temperature-to-humidity
-                                     humidity-to-location]}]
+(defn- seed-to-location
+  [seed
+   {:keys [seed-to-soil
+           soil-to-fertilizer
+           fertilizer-to-water
+           water-to-light
+           light-to-temperature
+           temperature-to-humidity
+           humidity-to-location]}]
   (let [soil (gets seed-to-soil seed seed)
         fertilizer (gets soil-to-fertilizer soil soil)
         water (gets fertilizer-to-water fertilizer fertilizer)
@@ -72,13 +74,15 @@
         location (gets humidity-to-location humidity humidity)]
     location))
 
-(defn location-to-seed [location {:keys [soil-to-seed
-                                         fertilizer-to-soil
-                                         water-to-fertilizer
-                                         light-to-water
-                                         temperature-to-light
-                                         humidity-to-temperature
-                                         location-to-humidity]}]
+(defn- location-to-seed
+  [location
+   {:keys [soil-to-seed
+           fertilizer-to-soil
+           water-to-fertilizer
+           light-to-water
+           temperature-to-light
+           humidity-to-temperature
+           location-to-humidity]}]
   (let [humidity (gets location-to-humidity location location)
         temperature (gets humidity-to-temperature humidity humidity)
         light (gets temperature-to-light temperature temperature)
@@ -88,25 +92,25 @@
         seed (gets soil-to-seed soil soil)]
     seed))
 
-(defn keep-closest-location [closest-location seed almanaque]
+(defn- keep-closest-location [closest-location seed almanaque]
   (let [location (seed-to-location seed almanaque)]
     (if-not (nil? closest-location)
       (min closest-location location)
       location)))
 
-(defn closest-spot [seeds almanaque]
+(defn- closest-spot [seeds almanaque]
   (reduce #(keep-closest-location %1 %2 almanaque) nil seeds))
 
-(defn part1 [inp]
-  (let [almanaque (parse-input inp)]
-    (closest-spot (:seeds almanaque) almanaque)))
-
-(defn seeds-with-steps [almanaque step]
+(defn- seeds-with-steps [almanaque step]
   (->> (:seeds almanaque)
        (partition 2)
        (map (fn [[seed rng]] (range seed (+ seed rng) step)))
        (flatten)
        (lazy-cat)))
+
+(defn part1 [inp]
+  (c/->then (parse-input inp)
+            #(closest-spot (:seeds %) %)))
 
 (defn part2
   ([inp] (part2 inp 1))

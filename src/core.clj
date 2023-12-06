@@ -33,3 +33,9 @@
 (defn insp
   ([v] (pp/pprint v) v)
   ([id v] (pp/pprint {id v}) v))
+
+;; {:lint-as {core/then clojure.core/fn}} on your clj-kondo
+(defmacro then 
+  "To use with ->> to avoid"
+  [args body value]
+  `((fn ~args ~body) ~value))
