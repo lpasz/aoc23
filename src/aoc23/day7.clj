@@ -33,7 +33,7 @@
                  :hand-int hand-int
                  :hand-freq hand-freq})))))
 
-(def type-points {:five-of-a-kind 7
+(def hand-type-to-points {:five-of-a-kind 7
                   :four-of-a-kind 6
                   :full-house 5
                   :three-of-a-kind 4
@@ -54,7 +54,7 @@
 (defn hand-type-points [hand]
   (-> hand
       (hand-type)
-      (type-points)))
+      (hand-type-to-points)))
 
 (defn strongest-first-card [cards1 cards2]
   (loop [cards1  (:hand-int cards1)
