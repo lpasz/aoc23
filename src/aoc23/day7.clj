@@ -72,16 +72,6 @@
       (strongest-first-card cards1 cards2)
       (compare hand-type1-points hand-type2-points))))
 
-(defn part1 [inp]
-  (->> (parse-part1 inp)
-       (sort type-of-hand-and-strongest-card)
-       (map-indexed (fn [idx cards] (assoc cards :rank (inc idx))))
-       (map #(* (:bid %) (:rank %)))
-       (apply +)))
-
-;; (765 220 28 684 483) 
-(assert (= 6440 (part1 exp1-input)))
-(assert (=  250453939 (part1 part1-input)))
 
 (def card-to-int-joker
   {\2 2
@@ -124,6 +114,13 @@
                  :hand-int hand-int
                  :hand-freq hand-freq})))))
 
+(defn part1 [inp]
+  (->> (parse-part1 inp)
+       (sort type-of-hand-and-strongest-card)
+       (map-indexed (fn [idx cards] (assoc cards :rank (inc idx))))
+       (map #(* (:bid %) (:rank %)))
+       (apply +)))
+
 (defn part2 [inp]
   (->> (parse-part2 inp)
        (sort type-of-hand-and-strongest-card)
@@ -131,4 +128,7 @@
        (map #(* (:bid %) (:rank %)))
        (apply +)))
 
-(part2 part1-input)
+(assert (= 6440 (part1 exp1-input)))
+(assert (= 250453939 (part1 part1-input)))
+(assert (= 5905 (part2 exp1-input)))
+(assert (= 248652697 (part2 part1-input)))
