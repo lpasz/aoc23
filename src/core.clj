@@ -35,7 +35,15 @@
   ([id v] (pp/pprint {id v}) v))
 
 ;; {:lint-as {core/then clojure.core/fn}} on your clj-kondo
-(defmacro then 
+(defmacro then
   "To use with ->> to avoid"
-  [args body value]
-  `((fn ~args ~body) ~value))
+  ([fun value] `(~fun ~value))
+  ([args body value] `((fn ~args ~body) ~value)))
+
+(comment
+  (assert (= '({:x 1, :y 1} {:x 2, :y 2} {:x 3, :y 3})
+             (then [[xs ys]] (map (fn [x y] {:x x :y y}) xs ys) [[1 2 3] [1 2 3]])))
+  ;; 2
+  (assert (= 2 (then #(+ % %) 1)))
+  ;;
+  )
