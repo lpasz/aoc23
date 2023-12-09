@@ -38,6 +38,7 @@
 (defmacro then
   "To use with ->> to avoid"
   ([fun value] `(~fun ~value))
+<<<<<<< Updated upstream
   ([args body value] `((fn ~args ~body) ~value)))
 
 (comment
@@ -47,3 +48,8 @@
   (assert (= 2 (then #(+ % %) 1)))
   ;;
   )
+=======
+  ([args body value]
+  `((fn ~args ~body) ~value)))
+
+>>>>>>> Stashed changes

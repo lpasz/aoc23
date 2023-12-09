@@ -51,7 +51,11 @@
   (let [[left-right symbol-to-left-right-map] (parse-input inp)]
     (->> (get-starting-positions symbol-to-left-right-map)
          (map #(steps-to-XXZ left-right symbol-to-left-right-map %))
+<<<<<<< Updated upstream
          (reduce math/lcm))))
+=======
+         (c/then #(reduce lcm (first %) (rest %))))))
+>>>>>>> Stashed changes
 
 (comment
   ;; Example 1 - Part1
