@@ -41,14 +41,6 @@
   ([fun value] `(~fun ~value))
   ([args body value] `((fn ~args ~body) ~value)))
 
-(comment
-  (assert (= '({:x 1, :y 1} {:x 2, :y 2} {:x 3, :y 3})
-             (then [[xs ys]] (map (fn [x y] {:x x :y y}) xs ys) [[1 2 3] [1 2 3]])))
-  ;; 2
-  (assert (= 2 (then #(+ % %) 1)))
-  ;;
-  )
-
 (defmacro get-input [file]
   `(slurp (str "./inputs/"
                (-> ~*ns*
@@ -57,3 +49,17 @@
                    (str/replace "aoc23." ""))
                "/"
                ~file)))
+
+(defn to-matrix [inp]
+  (->> (str/split-lines inp)
+       (map-indexed (fn [idy line] (->> line (map-indexed (fn [idx c] [[idx idy] c])))))
+       (flatten-once)
+       (into (sorted-map))))
+
+(defn print-matrix [mtx]
+  (->> mtx
+       (group-by (comp second first))
+       (into (sorted-map))
+       (then [sor]
+             (doseq [[_ lines] sor]
+               (println (reduce str "" (map second lines)))))))
