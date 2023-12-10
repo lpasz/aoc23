@@ -1,14 +1,15 @@
 (ns aoc23.day4
   "Scratchcards"
   (:require [clojure.string :as str]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [core :as c]))
 
-(def exp1-input (slurp "./inputs/day4/exp1.txt"))
-(def part1-input (slurp "./inputs/day4/part1.txt"))
+(def exp1-input (c/get-input "exp1.txt"))
+(def part1-input (c/get-input "part1.txt"))
 
 (defn- parse-digits [txt]
   (->> (re-seq #"\d+" txt)
-       (map #(Integer/parseInt %))))
+       (map c/parse-int)))
 
 (defn- calc-points [my-wins]
   (if-not (= (count my-wins) 0)

@@ -4,8 +4,8 @@
             [core :as c]
             [clojure.set :as set]))
 
-(def exp1-input (slurp "./inputs/day3/exp1.txt"))
-(def part1-input (slurp "./inputs/day3/part1.txt"))
+(def exp1-input (c/get-input "exp1.txt"))
+(def part1-input (c/get-input "part1.txt"))
 
 (defn- symbols-xy [items]
   (->> items
@@ -28,7 +28,7 @@
 (defn- number-xy-positions [start-idx idy item acc]
   (let [x-xy-positions (map #(+ start-idx %) (range (count item)))
         next-x (inc (last x-xy-positions))
-        int-item (Integer/parseInt item)
+        int-item (c/parse-int item)
         xy-positions (mapv (fn [x] [x idy]) x-xy-positions)
         acc (conj acc [int-item xy-positions])]
     [next-x acc]))

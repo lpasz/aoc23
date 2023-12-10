@@ -3,8 +3,8 @@
   (:require [clojure.string :as str]
             [core :as c]))
 
-(def exp1-input (slurp "./inputs/day7/exp1.txt"))
-(def part1-input (slurp "./inputs/day7/part1.txt"))
+(def exp1-input (c/get-input "exp1.txt"))
+(def part1-input (c/get-input "part1.txt"))
 (def card-to-int
   {\2 2
    \3 3
@@ -27,7 +27,7 @@
               (let [hand (seq hand)
                     hand-int (map card-to-int hand)
                     hand-freq (frequencies hand-int)]
-                {:bid (Integer/parseInt bid)
+                {:bid (c/parse-int bid)
                  :hand hand
                  :hand-int hand-int
                  :hand-freq hand-freq})))))
@@ -109,7 +109,7 @@
               (let [hand (seq hand)
                     hand-int (map card-to-int-joker hand)
                     hand-freq (add-jokers (frequencies hand-int))]
-                {:bid (Integer/parseInt bid)
+                {:bid (c/parse-int bid)
                  :hand hand
                  :hand-int hand-int
                  :hand-freq hand-freq})))))

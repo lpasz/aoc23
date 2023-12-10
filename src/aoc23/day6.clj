@@ -3,8 +3,8 @@
   (:require [clojure.string :as str]
             [core :as c]))
 
-(def exp1-input (slurp "./inputs/day6/exp1.txt"))
-(def part1-input (slurp "./inputs/day6/part1.txt"))
+(def exp1-input (c/get-input "exp1.txt"))
+(def part1-input (c/get-input "part1.txt"))
 
 (defn- hold-better-than-record [time record-distance hold]
   (let [distance (* hold (- time hold))]
@@ -21,7 +21,7 @@
 (defn part1 [inp]
   (->> (str/split-lines inp)
        (map #(re-seq #"\d+" %))
-       (map (fn [line-nums] (map #(Integer/parseInt %) line-nums)))
+       (map (fn [line-nums] (map c/parse-int line-nums)))
        (c/then [[times distances]]
                (map (fn [time distance] {:time time :record-distance distance})
                     times

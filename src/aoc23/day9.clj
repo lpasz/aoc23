@@ -3,47 +3,43 @@
   (:require [clojure.string :as str]
             [core :as c]))
 
+(def exp1-input (c/get-input "exp1.txt"))
+(def part1-input (c/get-input "part1.txt"))
 
-(def exp1-input (slurp "./inputs/day9/exp1.txt"))
-(def part1-input (slurp "./inputs/day9/part1.txt"))
-
-(defn parse-int [s] (Integer/parseInt s))
-
-(defn parse-input [inp]
+(defn- parse-input [inp]
   (->> (str/split-lines inp)
        (map #(str/split % #" "))
-       (mapv #(mapv parse-int %))))
+       (map #(map c/parse-int %))))
 
-(defn diff [coll]
-  (->> (partition 2 1 coll)
+(defn- diff-in-between-steps [coll]
+  (->> (partition 2 1 coll)       
        (map (fn [[x y]] (- y x)))))
 
-(defn diff-to-zero [coll]
-  (loop [colls [coll]
-         coll coll]
-    (let [diff (diff coll)]
+(defn- predict-next [coll]
+  (loop [coll coll
+         next-value (last coll)]
+    (let [diff (diff-in-between-steps coll)]
       (if (every? zero? diff)
-        (conj colls diff)
-        (recur (conj colls diff) diff)))))
+        next-value
+        (recur diff (+ next-value (last diff)))))))
 
 (defn part1 [inp]
   (->> (parse-input inp)
-       (map diff-to-zero)
-       (map (fn [coll] (map #(or (last %) 0) coll)))
-       (map #(apply + %))
-       (apply +)))
+       (map predict-next)
+       (reduce +)))
 
 (defn part2 [inp]
   (->> (parse-input inp)
        (map reverse)
-       (map diff-to-zero)
-       (map (fn [coll] (map #(or (last %) 0) coll)))
-       (map #(apply + %))
-       (apply +)))
+       (map predict-next)
+       (reduce +)))
 
-
-
-
-(part1 exp1-input)
-(part1 part1-input)
-(part2 part1-input)
+(comment
+  ;; example 1 - part 1
+  (assert (= 114 (part1 exp1-input)))
+  ;; part1
+  (assert (= 1974232246 (part1 part1-input)))
+  ;; part 2
+  (assert (= 928 (part2 part1-input)))
+  ;;
+  )

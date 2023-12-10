@@ -1,17 +1,17 @@
 (ns aoc23.day2
   "Cube Conundrum"
   (:require [clojure.string :as str]
-            [core :refer [max-by]]))
+            [core :as c]))
 
-(def exp1-input (slurp "./inputs/day2/exp1.txt"))
-(def part1-input (slurp "./inputs/day2/part1.txt"))
+(def exp1-input (c/get-input "exp1.txt"))
+(def part1-input (c/get-input "part1.txt"))
 (def can-possibly-contain-cubes {:red 12 :green 13 :blue 14})
 
 (defn- to-cube-color-and-count [cube-count-and-color]
   (let [[count color] (-> cube-count-and-color
                           (str/trim)
                           (str/split #"\s"))]
-    [(keyword color) (Integer/parseInt count)]))
+    [(keyword color) (c/parse-int count)]))
 
 (defn- to-cubes-taken-out-of-bag [cubes-taken-out-of-bag]
   (->> (str/split cubes-taken-out-of-bag #",")
@@ -24,7 +24,7 @@
 
 (defn- to-id-and-bag-turns [line]
   (let [[[_line id turns]] (re-seq #"Game\s(\d+):\s(.*)" line)]
-    [(Integer/parseInt id) (to-taken-out-of-bag-in-turns turns)]))
+    [(c/parse-int id) (to-taken-out-of-bag-in-turns turns)]))
 
 (defn- possibly-contained-in-round? [round]
   (every? (fn [[color count]]
@@ -35,7 +35,7 @@
   (every? possibly-contained-in-round? rounds))
 
 (defn- power-of-cubes [[_id turns]]
-  (let [color-max-cubes (fn [color] (max-by #(get % color 0) turns))]
+  (let [color-max-cubes (fn [color] (c/max-by #(get % color 0) turns))]
     (->> (keys can-possibly-contain-cubes)
          (map color-max-cubes)
          (apply *))))

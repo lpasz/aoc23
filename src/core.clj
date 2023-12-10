@@ -1,5 +1,6 @@
 (ns core
-  (:require [clojure.pprint :as pp]))
+  (:require [clojure.pprint :as pp]
+            [clojure.string :as str]))
 
 (defn map-key [fun coll]
   (map (fn [[key value]] [(fun key) value]) coll))
@@ -38,7 +39,6 @@
 (defmacro then
   "To use with ->> to avoid"
   ([fun value] `(~fun ~value))
-<<<<<<< Updated upstream
   ([args body value] `((fn ~args ~body) ~value)))
 
 (comment
@@ -48,8 +48,12 @@
   (assert (= 2 (then #(+ % %) 1)))
   ;;
   )
-=======
-  ([args body value]
-  `((fn ~args ~body) ~value)))
 
->>>>>>> Stashed changes
+(defmacro get-input [file]
+  `(slurp (str "./inputs/"
+               (-> ~*ns*
+                   (ns-name)
+                   (str)
+                   (str/replace "aoc23." ""))
+               "/"
+               ~file)))

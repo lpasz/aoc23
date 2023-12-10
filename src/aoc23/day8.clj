@@ -3,10 +3,10 @@
   (:require [clojure.string :as str]
             [clojure.math.numeric-tower :as math]))
 
-(def exp1-input (slurp "./inputs/day8/exp1.txt"))
-(def exp2-input (slurp "./inputs/day8/exp2.txt"))
-(def exp3-input (slurp "./inputs/day8/exp3.txt"))
-(def part1-input (slurp "./inputs/day8/part1.txt"))
+(def exp1-input (c/get-input "exp1.txt"))
+(def exp2-input (c/get-input "exp2.txt"))
+(def exp3-input (c/get-input "exp3.txt"))
+(def part1-input (c/get-input "part1.txt"))
 
 (defn symbol-to-left-right [inp]
   (->> (str/split-lines inp)
@@ -51,11 +51,7 @@
   (let [[left-right symbol-to-left-right-map] (parse-input inp)]
     (->> (get-starting-positions symbol-to-left-right-map)
          (map #(steps-to-XXZ left-right symbol-to-left-right-map %))
-<<<<<<< Updated upstream
          (reduce math/lcm))))
-=======
-         (c/then #(reduce lcm (first %) (rest %))))))
->>>>>>> Stashed changes
 
 (comment
   ;; Example 1 - Part1
