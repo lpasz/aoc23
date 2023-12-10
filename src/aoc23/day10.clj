@@ -6,7 +6,6 @@
 (def part1-input (c/get-input "part1.txt"))
 (def exp3-input (c/get-input "exp3.txt"))
 (def exp4-input (c/get-input "exp4.txt"))
-(def exp5-input (c/get-input "exp5.txt"))
 
 (defn- find-start [mtx]
   (->> mtx
@@ -52,7 +51,7 @@
                (conj positions position))))))
 
 
-(defn- shoelaces-theorem-area
+(defn- shoelaces-formula-area
   "We are using the polygon version.
    See more: https://en.wikipedia.org/wiki/Shoelace_formula"
   [polygon-points]
@@ -77,7 +76,7 @@
 (defn part2 [inp]
   (let [mtx (c/to-matrix inp)
         pipe-loop-points (find-pipe-loop mtx (find-start mtx))
-        pipe-loop-area (shoelaces-theorem-area pipe-loop-points)
+        pipe-loop-area (shoelaces-formula-area pipe-loop-points)
         points-inside-loop (pick-theorem-internal-points pipe-loop-area pipe-loop-points)]
     points-inside-loop))
 
