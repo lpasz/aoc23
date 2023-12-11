@@ -28,27 +28,28 @@
 (defn to-mtx-with-coords [inp]
   (map-indexed (fn [idy line] (map-indexed (fn [idx itm] [[idx idy] itm]) line)) inp))
 
-(defn remap-y-coords [jmp n] (fn [[[x y] itm]]
-                               [[x (+ (* jmp (dec n)) y)] itm]))
+(defn remap-coord [x jmp n]
+  (+ (* jmp (dec n)) x))
 
-(defn remap-x-coords [jmp n] (fn [[[x y] itm]]
-                               [[(+ (* jmp (dec n)) x) y] itm]))
+(defn remap-coords [jmp n [[x y] itm] axis]
+  (axis {:y [[x (remap-coord y jmp n)] itm]
+         :x [[(remap-coord x jmp n) y] itm]}))
 
-(defn expand [n remap-coords-fn mtx]
+(defn expand [n axis mtx]
   (->> mtx
        (reduce (fn [[jmp acc] line]
                  (if (all-space? line)
                    [(inc jmp) (conj acc  line)]
-                   [jmp (conj acc (map #((remap-coords-fn jmp n) %) line))]))
+                   [jmp (conj acc (map #(remap-coords jmp n % axis) line))]))
                [0 []])
        (second)))
 
 (defn sum-galaxy-distances [inp empty-space-multiplier]
   (->> (parse-input inp)
        (to-mtx-with-coords)
-       (expand empty-space-multiplier remap-y-coords)
+       (expand empty-space-multiplier :y)
        (c/transpose)
-       (expand empty-space-multiplier remap-x-coords)
+       (expand empty-space-multiplier :x)
        (c/transpose)
        (c/flatten-once)
        (filter #(= \# (second %)))
