@@ -51,7 +51,9 @@
                ~file)))
 
 (defn to-matrix [inp]
-  (->> (str/split-lines inp)
+  (->> (if (string? inp)
+         (str/split-lines inp)
+         inp)
        (map-indexed (fn [idy line] (->> line (map-indexed (fn [idx c] [[idx idy] c])))))
        (flatten-once)
        (into (sorted-map))))
@@ -63,3 +65,6 @@
        (then [sor]
              (doseq [[_ lines] sor]
                (println (reduce str "" (map second lines)))))))
+
+(defn transpose [matrix]
+  (apply map vector matrix))
