@@ -35,26 +35,28 @@
   (axis {:y [[x (remap-coord y jmp n)] itm]
          :x [[(remap-coord x jmp n) y] itm]}))
 
-(defn expand [n axis mtx]
+(defn expand [space-expansion-coef axis mtx]
   (->> mtx
        (reduce (fn [[jmp acc] line]
                  (if (all-space? line)
-                   [(inc jmp) (conj acc  line)]
-                   [jmp (conj acc (map #(remap-coords jmp n % axis) line))]))
+                   [(inc jmp) (conj acc line)]
+                   [jmp (conj acc (map #(remap-coords jmp space-expansion-coef % axis) line))]))
                [0 []])
        (second)))
 
-(defn sum-galaxy-distances [inp empty-space-multiplier]
+(defn expand-space [space-expansion-coef mtx]
+  (->> mtx
+       (expand space-expansion-coef :y)
+       (c/transpose)
+       (expand space-expansion-coef :x)
+       (c/transpose)
+       (c/flatten-once)))
+
+(defn sum-galaxy-distances [inp space-expansion-coef]
   (->> (parse-input inp)
        (to-mtx-with-coords)
-       (expand empty-space-multiplier :y)
-       (c/transpose)
-       (expand empty-space-multiplier :x)
-       (c/transpose)
-       (c/flatten-once)
-       (filter #(= \# (second %)))
-       (into {})
-       (keys)
+       (expand-space space-expansion-coef)
+       (keep (fn [[coord itm]] (when (= \# itm) coord)))
        (distance-from-galaxy-to-all-others)
        (vals)
        (reduce +)))
