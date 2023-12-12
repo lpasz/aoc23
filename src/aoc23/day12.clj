@@ -44,19 +44,32 @@
      (set)
      (count))))
 
-???.### 1,1,3
+;; ???.### 1,1,3
 
- "#.#.###"
-2r1010111
+;;  "#.#.###"
+;; (bit-and 2r1010111 2r1)
+
 
 (defn part1 [inp]
   (->> (parse-input inp)
        (map count-patterns)
        (reduce +)))
 
-(part1 exp1-input)
-(part1 part1-input)
+;; (time (part1 exp1-input))
+;; (part1 part1-input)
+
+(mapcat identity (repeat 3 [1 2 3]))
+
+(defn part2fy [[a b]]
+  [(str/join "?" (repeat 5 a))
+   (mapcat identity (repeat 5 b))])
+
+(->> (parse-input exp1-input)
+     (map part2fy))
+
+(doseq [[a b] (map part2fy (parse-input exp1-input))]
+  (c/insp [a b (count-patterns [a b])]))
 
 
-
-
+(assert (= ["???.###????.###????.###????.###????.###" [1,1,3,1,1,3,1,1,3,1,1,3,1,1,3]]
+           (part2fy ["???.###" [1,1,3]])))
