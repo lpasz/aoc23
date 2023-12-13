@@ -95,7 +95,7 @@
                                 (compare  c2 c1))))
 
 (defn add-jokers [freq]
-  (if (= 1 (count freq))
+  (if (c/one? (count freq))
     freq
     (let [joker-count (get freq (card-to-int-joker \J) 0)
           no-joker-freq (dissoc freq (card-to-int-joker \J))

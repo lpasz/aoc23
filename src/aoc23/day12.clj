@@ -1,4 +1,5 @@
 (ns aoc23.day12
+  "Hot Springs"
   (:require [core :as c]
             [clojure.string :as str]))
 

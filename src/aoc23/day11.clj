@@ -1,4 +1,5 @@
 (ns aoc23.day11
+  "Cosmic Expansion"
   (:require [core :as c]
             [clojure.string :as str]))
 

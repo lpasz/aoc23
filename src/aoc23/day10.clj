@@ -1,4 +1,5 @@
 (ns aoc23.day10
+  "Pipe Maze"
   (:require [core :as c]))
 
 (def exp1-input (c/get-input "exp1.txt"))
@@ -84,8 +85,8 @@
   (assert (= 4 (part1 exp1-input)))
   (assert (= 8 (part1 exp2-input)))
   (assert (= 7005 (part1 part1-input)))
-  (assert (= 1 (part2 exp1-input)))
-  (assert (= 1 (part2 exp2-input)))
+  (assert (c/one? (part2 exp1-input)))
+  (assert (c/one? (part2 exp2-input)))
   (assert (= 4 (part2 exp3-input)))
   (assert (= 8 (part2 exp4-input)))
   (assert (= 417 (part2 part1-input)))
