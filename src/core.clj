@@ -66,5 +66,8 @@
              (doseq [[_ lines] sor]
                (println (reduce str "" (map second lines)))))))
 
+
+(defn one? [n] (= 1 n))
+
 (defn transpose [matrix]
   (apply map vector matrix))
