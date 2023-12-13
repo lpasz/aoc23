@@ -26,18 +26,21 @@
                (and (empty? springs) (= [curr-spring-cnt] pattern))  1
                ;; otherwise recursivelly continue or abandon
                :else (+
+                      ;; is \# or \? continue as if is \#
                       (if (#{\? \#} (first springs))
-                        ;; is spring or ? continue as if is spring
+                        ;; rest of springs + pattern we still running against but we increment spring count since we just had a spring
                         (dfs-spring-pattern (rest springs) pattern (inc curr-spring-cnt))
+                        ;; not a \# terminate dfs path
                         0)
-                      ;; is dot or ? continue as if is dot
+                      ;; is \. or \? continue as if is \.
                       (if (and (#{\. \?} (first springs))
                                (#{0 (first pattern)} curr-spring-cnt))
                         (if (zero? curr-spring-cnt)
-                          ;; if current spring count is zero, just keep going
+                          ;; if current \# count is zero, just keep going
                           (dfs-spring-pattern (rest springs) pattern 0)
-                          ;; if current spring count > zero, reset it, because we had a dot
+                          ;; if current \# count > zero, reset it, because we just had a \.
                           (dfs-spring-pattern (rest springs) (rest pattern) 0))
+                        ;; not a \. terminate dfs path
                         0))))))
 
 (defn part1 [inp]
