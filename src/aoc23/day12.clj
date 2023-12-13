@@ -13,63 +13,48 @@
                                 (re-seq #"\d+")
                                 (map c/parse-int))]))))
 
-(defn pattern [recovery]
-  (->> recovery
-       (map (fn [i] (str "#{" i "}")))
-       (str/join "\\.+")
-       (c/then [s] (str "[\\.+]?" s "[\\.+]?"))
-       (re-pattern)))
+(defn part2-fy [[text recovery] n]
+  [(str/join "?" (repeat n text))
+   (flatten (repeat n recovery))])
 
-(defn count-patterns [[text recovery]]
-  (let [sum (reduce + recovery)
-        regx-pattern (pattern recovery)
-        ?count (count (filter #(= % \?) text))
-        hash-count (count (filter #(= \# %) text))
-        need-n-hash (- sum hash-count)
-        options (map (fn [_] ["#" "."]) (range 20))]
-    (->>
-     (for [a0  ["#" "."] a1  ["#" "."] a2  ["#" "."] a3  ["#" "."]
-           a4  ["#" "."] a5  ["#" "."] a6  ["#" "."] a7  ["#" "."]
-           a8  ["#" "."] a9  ["#" "."] a10 ["#" "."] a11 ["#" "."]
-           a12 ["#" "."] a13 ["#" "."] a14 ["#" "."] a15 ["#" "."]
-           a16 ["#" "."] a17 ["#" "."] a18 ["#" "."] a19 ["#" "."]
-           :when (= need-n-hash (->> [a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19]
-                                     (take ?count)
-                                     (filter #(= "#" %))
-                                     (count)))]
-       (->> [a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19]
-            (take ?count)
-            (reduce #(str/replace-first %1 #"\?" %2) text)))
-     (filter #(re-find regx-pattern %))
-     (set)
-     (count))))
-
-;; ???.### 1,1,3
-
-;;  "#.#.###"
-;; (bit-and 2r1010111 2r1)
-
+(def dfs-spring-pattern
+  (memoize (fn  [springs pattern curr-spring-cnt]
+             (cond
+               ;; If it's both springs and pattern are empty and current current count is zero -> pattern matched
+               (and (empty? springs) (empty? pattern) (zero? curr-spring-cnt)) 1
+               ;; if springs is empty and pattern is the last current -> pattern matched
+               (and (empty? springs) (= [curr-spring-cnt] pattern))  1
+               ;; otherwise recursivelly continue or abandon
+               :else (+
+                      (if (#{\? \#} (first springs))
+                        ;; is spring or ? continue as if is spring
+                        (dfs-spring-pattern (rest springs) pattern (inc curr-spring-cnt))
+                        0)
+                      ;; is dot or ? continue as if is dot
+                      (if (and (#{\. \?} (first springs))
+                               (#{0 (first pattern)} curr-spring-cnt))
+                        (if (zero? curr-spring-cnt)
+                          ;; if current spring count is zero, just keep going
+                          (dfs-spring-pattern (rest springs) pattern 0)
+                          ;; if current spring count > zero, reset it, because we had a dot
+                          (dfs-spring-pattern (rest springs) (rest pattern) 0))
+                        0))))))
 
 (defn part1 [inp]
   (->> (parse-input inp)
-       (map count-patterns)
+       (pmap #(dfs-spring-pattern (first %) (second %) 0))
        (reduce +)))
 
-;; (time (part1 exp1-input))
-;; (part1 part1-input)
+(defn part2 [inp]
+  (->> (parse-input inp)
+       (pmap #(part2-fy % 5))
+       (pmap #(dfs-spring-pattern (first %) (second %) 0))
+       (reduce +)))
 
-(mapcat identity (repeat 3 [1 2 3]))
-
-(defn part2fy [[a b]]
-  [(str/join "?" (repeat 5 a))
-   (mapcat identity (repeat 5 b))])
-
-(->> (parse-input exp1-input)
-     (map part2fy))
-
-(doseq [[a b] (map part2fy (parse-input exp1-input))]
-  (c/insp [a b (count-patterns [a b])]))
-
-
-(assert (= ["???.###????.###????.###????.###????.###" [1,1,3,1,1,3,1,1,3,1,1,3,1,1,3]]
-           (part2fy ["???.###" [1,1,3]])))
+(comment
+  (assert (= 21 (part1 exp1-input)))
+  (assert (= 7939 (part1 part1-input)))
+  (assert (= 525152 (part2 exp1-input)))
+  (assert (= 850504257483930 (part2 part1-input)))
+  ;;
+  )
