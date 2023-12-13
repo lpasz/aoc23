@@ -15,7 +15,7 @@
                            (inc idx2) (get idx-mtx (inc idx2)))))
 
 (defn one-diff? [line1 line2]
-  (->> (map #(= %1 %2) line1 line2)
+  (->> (map = line1 line2)
        (filter false?)
        (count)
        (c/one?)))
@@ -23,19 +23,18 @@
 (defn reflection-diff?
   ([idx-mtx idx1 line1 idx2 line2] (reflection-diff? idx-mtx idx1 line1 idx2 line2 0))
   ([idx-mtx idx1 line1 idx2 line2 acc-diff]
-   (cond (or (nil? line1)
-             (nil? line2))              (c/one? acc-diff)
-
-         (= line1 line2)                (recur idx-mtx
-                                               (dec idx1) (get idx-mtx (dec idx1))
-                                               (inc idx2) (get idx-mtx (inc idx2))
-                                               acc-diff)
+   (cond (or (nil? line1) (nil? line2)) (c/one? acc-diff)
 
          (and (zero? acc-diff)
               (one-diff? line1 line2))  (recur idx-mtx
                                                (dec idx1) (get idx-mtx (dec idx1))
                                                (inc idx2) (get idx-mtx (inc idx2))
-                                               1))))
+                                               1)
+
+         (= line1 line2)                (recur idx-mtx
+                                               (dec idx1) (get idx-mtx (dec idx1))
+                                               (inc idx2) (get idx-mtx (inc idx2))
+                                               acc-diff))))
 
 
 (defn reflections-lines [mtx reflect?]
@@ -43,7 +42,7 @@
     (->> (partition 2 1 idx-mtx)
          (filter (fn [[[idx1 line1] [idx2 line2]]] (reflect? idx-mtx idx1 line1 idx2 line2)))
          (first)
-         (c/then [[[idx1 _line1] _]] idx1))))
+         (ffirst))))
 
 (defn reflections-columns [mtx reflection?]
   (reflections-lines (c/transpose mtx) reflection?))
@@ -52,26 +51,19 @@
   {:lines (reflections-lines mtx reflection?)
    :columns (reflections-columns mtx reflection?)})
 
-(defn to-mtx-with-coords [lines]
-  (map seq (str/split-lines lines)))
-
 (defn calc-reflections [{:keys [lines columns]}]
   (cond (nil? lines) columns
         (nil? columns) (* 100 lines)))
 
-(defn part1 [inp]
+(defn part [inp pred]
   (->> (str/split inp #"\n\n")
-       (map to-mtx-with-coords)
-       (map #(find-reflections % reflection?))
+       (map #(map seq (str/split-lines %)))
+       (map #(find-reflections % pred))
        (map calc-reflections)
        (reduce +)))
 
-(defn part2 [inp]
-  (->> (str/split inp #"\n\n")
-       (map to-mtx-with-coords)
-       (map #(find-reflections % reflection-diff?))
-       (map calc-reflections)
-       (reduce +)))
+(defn part1 [inp] (part inp reflection?))
+(defn part2 [inp] (part inp reflection-diff?))
 
 (comment
   (assert (= 405 (part1 exp1-input)))

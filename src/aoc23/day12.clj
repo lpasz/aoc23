@@ -20,45 +20,28 @@
 
 
 (def dfs-spring-pattern
-  (fn  [springs pattern curr-spring-cnt]
-    (cond
-                 ;; If it's both springs and pattern are empty and current current count is zero -> pattern matched
-      (and (empty? springs) (empty? pattern) (zero? curr-spring-cnt)) 1
-                 ;; if springs is empty and pattern is the last current -> pattern matched
-      (and (empty? springs) (= [curr-spring-cnt] pattern))  1
-                 ;; otherwise recursivelly continue or abandon
-      :else (+
-                        ;; is \# or \? continue as if is \#
-             (if (#{\? \#} (first springs))
-                          ;; rest of springs + pattern we still running against but we increment spring count since we just had a spring
-               (dfs-spring-pattern (rest springs) pattern (inc curr-spring-cnt))
-                          ;; not a \# terminate dfs path
-               0)
-                        ;; is \. or \? continue as if is \.
-             (if (and (#{\. \?} (first springs))
-                      (#{0 (first pattern)} curr-spring-cnt))
-               (if (zero? curr-spring-cnt)
-                            ;; if current \# count is zero, just keep going
-                 (dfs-spring-pattern (rest springs) pattern 0)
-                            ;; if current \# count > zero, reset it, because we just had a \.
-                 (dfs-spring-pattern (rest springs) (rest pattern) 0))
-                          ;; not a \. terminate dfs path
-               0)))))
+  (memoize
+   (fn [springs pattern curr-cnt]
+     (cond
+       (and (empty? springs)
+            (empty? pattern)
+            (zero? curr-cnt))             1
 
-;; (fn  [springs pattern curr-spring-cnt r]
-;;   (c/insp [springs (concat r springs) pattern curr-spring-cnt])
-;;   (cond
-;;     (and (empty? springs) (empty? pattern) (zero? curr-spring-cnt)) 1
-;;     (and (empty? springs) (= [curr-spring-cnt] pattern))  1
-;;     (= \# (first springs)) (dfs-spring-pattern (rest springs) pattern (inc curr-spring-cnt) (conj r (first springs)))
-;;     (= \. (first springs) (= curr-spring-cnt (first pattern))) (dfs-spring-pattern (rest springs) (rest pattern) 0 (conj r (first springs)))
-;;     (= \. (first springs) (zero? curr-spring-cnt)) (dfs-spring-pattern (rest springs) pattern 0 (conj r (first springs)))
-;;     (= \? (first springs)) (+ (dfs-spring-pattern (cons \# (rest springs)) pattern curr-spring-cnt r)
-;;                               (dfs-spring-pattern (cons \. (rest springs)) pattern 0 r))
-;;                ;; otherwise recursivelly continue or abandon
-;;     :else 0))
+       (and (empty? springs)
+            (= [curr-cnt] pattern))       1
 
-;; (dfs-spring-pattern "???.###" [1,1,3] 0 [])
+       (= \? (first springs))             (+ (dfs-spring-pattern (cons \# (rest springs)) pattern curr-cnt)
+                                             (dfs-spring-pattern (cons \. (rest springs)) pattern curr-cnt))
+
+       (= \# (first springs))             (dfs-spring-pattern (rest springs) pattern (inc curr-cnt))
+
+       (and (= \. (first springs))
+            (zero? curr-cnt))             (dfs-spring-pattern (rest springs) pattern 0)
+
+       (and (= \. (first springs))
+            (= (first pattern) curr-cnt)) (dfs-spring-pattern (rest springs) (rest pattern) 0)
+
+       :else                              0))))
 
 (defn part1 [inp]
   (->> (parse-input inp)
