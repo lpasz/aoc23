@@ -59,12 +59,14 @@
        (into (sorted-map))))
 
 (defn print-matrix [mtx]
+  (println "")
   (->> mtx
        (group-by (comp second first))
        (into (sorted-map))
        (then [sor]
              (doseq [[_ lines] sor]
-               (println (reduce str "" (map second lines)))))))
+               (println (reduce str "" (map second lines))))))
+  mtx)
 
 
 (defn one? [n] (= 1 n))
