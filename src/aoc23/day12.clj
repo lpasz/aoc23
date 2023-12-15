@@ -6,7 +6,7 @@
 (def exp1-input (c/get-input "exp1.txt"))
 (def part1-input (c/get-input "part1.txt"))
 
-(defn parse-input [inp]
+(defn- parse-input [inp]
   (->> (str/split-lines inp)
        (map #(str/split % #" "))
        (map (fn [[spring-data rec-data]]

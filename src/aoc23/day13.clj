@@ -6,7 +6,7 @@
 (def exp1-input (c/get-input "exp1.txt"))
 (def part1-input (c/get-input "part1.txt"))
 
-(defn reflection? [idx-mtx idx1 line1 idx2 line2]
+(defn- reflection? [idx-mtx idx1 line1 idx2 line2]
   (cond
     (or (nil? line1) (nil? line2)) true
     (not= line1 line2) false
@@ -14,13 +14,13 @@
                            (dec idx1) (get idx-mtx (dec idx1))
                            (inc idx2) (get idx-mtx (inc idx2)))))
 
-(defn one-diff? [line1 line2]
+(defn- one-diff? [line1 line2]
   (->> (map = line1 line2)
-       (filter false?)
+       (c/reject true?)
        (count)
        (c/one?)))
 
-(defn reflection-diff?
+(defn- reflection-diff?
   ([idx-mtx idx1 line1 idx2 line2] (reflection-diff? idx-mtx idx1 line1 idx2 line2 0))
   ([idx-mtx idx1 line1 idx2 line2 acc-diff]
    (cond (or (nil? line1) (nil? line2)) (c/one? acc-diff)
@@ -37,25 +37,25 @@
                                                acc-diff))))
 
 
-(defn reflections-lines [mtx reflect?]
+(defn- reflections-lines [mtx reflect?]
   (let [idx-mtx (into (sorted-map) (map-indexed (fn [idx line] [(inc idx) line]) mtx))]
     (->> (partition 2 1 idx-mtx)
          (filter (fn [[[idx1 line1] [idx2 line2]]] (reflect? idx-mtx idx1 line1 idx2 line2)))
          (first)
          (ffirst))))
 
-(defn reflections-columns [mtx reflection?]
+(defn- reflections-columns [mtx reflection?]
   (reflections-lines (c/transpose mtx) reflection?))
 
-(defn find-reflections [mtx reflection?]
+(defn- find-reflections [mtx reflection?]
   {:lines (reflections-lines mtx reflection?)
    :columns (reflections-columns mtx reflection?)})
 
-(defn calc-reflections [{:keys [lines columns]}]
+(defn- calc-reflections [{:keys [lines columns]}]
   (cond (nil? lines) columns
         (nil? columns) (* 100 lines)))
 
-(defn part [inp pred]
+(defn- part [inp pred]
   (->> (str/split inp #"\n\n")
        (map #(map seq (str/split-lines %)))
        (map #(find-reflections % pred))

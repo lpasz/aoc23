@@ -35,9 +35,9 @@
   ([v] (pp/pprint v) v)
   ([id v] (pp/pprint {id v}) v))
 
-;; {:lint-as {core/then clojure.core/fn}} on your clj-kondo
+;; create a `.clj-kondo/config.edn` and add the line below
+;; {:lint-as {core/then clojure.core/fn}}
 (defmacro then
-  "To use with ->> to avoid"
   ([fun value] `(~fun ~value))
   ([args body value] `((fn ~args ~body) ~value)))
 
@@ -68,19 +68,21 @@
                (println (reduce str "" (map second lines))))))
   mtx)
 
-
 (defn one? [n] (= 1 n))
 
 (defn transpose [matrix]
   (apply map vector matrix))
 
-(defn remove-first [x coll]
+(defn remove-first [pred coll]
   (lazy-seq
    (when (seq coll)
      (let [[y & ys] coll]
-       (if (x y)
+       (if (pred y)
          ys
-         (cons y (remove-first x ys)))))))
+         (cons y (remove-first pred ys)))))))
+
+(defn reject [pred coll]
+  (filter #(not (pred %)) coll))
 
 
 

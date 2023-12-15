@@ -6,34 +6,34 @@
 (def exp1-input (c/get-input "exp1.txt"))
 (def part1-input (c/get-input "part1.txt"))
 
-(defn hash-calc [char hash-acc]
+(defn- hash-calc [char hash-acc]
   (rem (* 17 (+ hash-acc (long char))) 256))
 
-(defn hash-str
+(defn- hash-str
   ([s] (hash-str s 0))
   ([[s1 & srest] hash]
    (if (nil? s1)
      hash
      (recur srest (hash-calc s1 hash)))))
 
-(defn add-key-hash-focal-or-update-focal [coll key hash-key focal]
+(defn- add-key-hash-focal-or-update-focal [coll key hash-key focal]
   (if (some #(= key (first %)) coll)
     (map (fn [[k h f]] (if (= k key)
                          [k h  focal]
                          [k h f])) coll)
     (conj coll [key hash-key focal])))
 
-(defn remove-lens-with-key [coll key]
+(defn- remove-lens-with-key [coll key]
   (c/remove-first #(#{key} (first %)) coll))
 
-(defn parse-lens-box [lens-box]
+(defn- parse-lens-box [lens-box]
   (let [[[_all key operation focal]] (re-seq #"([A-Z|a-z]+)([=|-])(\d+)?" lens-box)]
     [key
      operation
      (hash-str key)
      (c/parse-int focal)]))
 
-(defn hashmap [lens-boxes]
+(defn- hashmap [lens-boxes]
   (loop [lens-boxes lens-boxes
          acc {}]
     (if-let [lens-box (first lens-boxes)]
@@ -49,6 +49,7 @@
   (->> (str/split inp #"\n|,")
        (map hash-str)
        (reduce +)))
+
 
 (defn part2 [inp]
   (->> (str/split inp #"\n|,")
@@ -66,7 +67,7 @@
   (assert (= 517965 (part1 part1-input)))
   (assert (= 145 (part2 exp1-input)))
   (assert (= 267372 (part2 part1-input)))
-;;
+  ;;
   )
 
 

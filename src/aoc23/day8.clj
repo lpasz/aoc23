@@ -8,20 +8,20 @@
 (def exp3-input (c/get-input "exp3.txt"))
 (def part1-input (c/get-input "part1.txt"))
 
-(defn symbol-to-left-right [inp]
+(defn- symbol-to-left-right [inp]
   (->> (str/split-lines inp)
        (map #(re-seq #"[A-Z|\d]+" %))
        (map (fn [[key left right]]
               [key {\L left \R right}]))
        (into (sorted-map))))
 
-(defn parse-input [inp]
+(defn- parse-input [inp]
   (let [[left-right rest] (str/split inp #"\n\n")
         left-right (cycle (seq left-right))
         symbol-to-left-right-map (symbol-to-left-right rest)]
     [left-right symbol-to-left-right-map]))
 
-(defn steps-to-ZZZ [[lr-cycle symbol-to-left-right-map]]
+(defn- steps-to-ZZZ [[lr-cycle symbol-to-left-right-map]]
   (loop [current-point (ffirst symbol-to-left-right-map)
          steps 0]
     (if (= "ZZZ" current-point)
@@ -30,7 +30,7 @@
             next-point (get-in symbol-to-left-right-map [current-point current-step])]
         (recur next-point (inc steps))))))
 
-(defn steps-to-XXZ [lr-cycle symbol-to-left-right-map current-point]
+(defn- steps-to-XXZ [lr-cycle symbol-to-left-right-map current-point]
   (loop [current-point current-point
          step 0]
     (if (str/ends-with? current-point "Z")
@@ -38,7 +38,7 @@
       (recur ((symbol-to-left-right-map current-point) (nth lr-cycle step))
              (inc step)))))
 
-(defn get-starting-positions [symbol-to-left-right-map]
+(defn- get-starting-positions [symbol-to-left-right-map]
   (->> symbol-to-left-right-map
        (keys)
        (filter #(str/ends-with? % "A"))))

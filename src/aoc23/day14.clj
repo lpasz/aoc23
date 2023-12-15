@@ -1,6 +1,6 @@
 (ns aoc23.day14
-  (:require [core :as c]
-            [clojure.string :as str]))
+  "Parabolic Reflector Dish"
+  (:require [core :as c]))
 
 
 (def exp1-input (c/get-input "exp1.txt"))
@@ -12,16 +12,15 @@
    :west (fn [[x y]] [(dec x) y])
    :east (fn [[x y]] [(inc x) y])})
 
-(defn go-direction [curr-coord dir mtx]
+(defn- go-direction [curr-coord dir mtx]
   (let [next-coord ((dir directions) curr-coord)]
     (case (get mtx next-coord)
       \. next-coord
       curr-coord)))
 
-(defn move [mtx dir]
+(defn- move [mtx dir]
   (->> mtx
-       (c/filter-by-value #{\O})
-       (keys)
+       (keep (fn [[key value]] (when (#{\O} value) key)))
        (reduce (fn [acc-mtx round-rock-coord]
                  (let [next-round-rock-coord (go-direction round-rock-coord dir mtx)]
                    (if (= next-round-rock-coord round-rock-coord)
@@ -31,14 +30,16 @@
                          (assoc round-rock-coord \.)))))
                mtx)))
 
-(defn tilt [dir mtx]
+(defn- tilt [dir mtx]
   (loop [mtx-acc mtx]
     (let [next-mtx (move mtx-acc dir)]
-      (if (= next-mtx mtx-acc)
-        mtx-acc
+      (if (= mtx-acc next-mtx)
+        next-mtx
         (recur next-mtx)))))
 
-(defn calculate-load-on-north [mtx]
+(def tilt-memo (memoize tilt))
+
+(defn- calculate-load-on-north [mtx]
   (let [max-y (inc (c/max-by #(-> % first second) mtx))]
     (->> mtx
          (c/filter-by-value #{\O})
@@ -59,22 +60,22 @@
                      (when (not (@repeating fturn))
                        (swap! repeating assoc fturn turn))
                      (swap! improvements assoc load turn))
-                   (reduce (fn [acc-mtx dir] (tilt dir acc-mtx)) acc-mtx dirs)))
+                   (reduce (fn [acc-mtx dir] (tilt-memo dir acc-mtx)) acc-mtx dirs)))
                mtx)))
 
-(defn calc-last-appearance [first-appear appears-each]
+(defn- calc-last-appearance [first-appear appears-each]
   (loop [n 1]
     (if (>= 1000000000 (+ (* n appears-each) first-appear))
       (recur (inc n))
       (+ first-appear (* (dec n) 7)))))
 
-(defn calc-from-stored []
+(defn- calc-from-stored []
   (let [[fturn sturn] (last @repeating)
         last-apper (calc-last-appearance fturn (- sturn fturn))]
     (+ (- 1000000000 last-apper) fturn)))
 
 
-(defn generate-small-store [inp n]
+(defn- generate-small-store [inp n]
   (->> (c/to-matrix inp)
        (tilt-cycle [:north :west :south :east] n)))
 

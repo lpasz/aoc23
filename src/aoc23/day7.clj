@@ -20,7 +20,7 @@
    \K 13
    \A 14})
 
-(defn parse-part1 [inp]
+(defn- parse-part1 [inp]
   (->> (str/split-lines inp)
        (map #(str/split % #" "))
        (map (fn [[hand bid]]
@@ -40,7 +40,7 @@
                           :one-pair 2
                           :high-card 1})
 
-(defn hand-type [{:keys [hand-freq]}]
+(defn- hand-type [{:keys [hand-freq]}]
   (case (sort > (vals hand-freq))
     [1 1 1 1 1] :high-card
     [2 1 1 1] :one-pair
@@ -50,12 +50,12 @@
     [4 1] :four-of-a-kind
     [5] :five-of-a-kind))
 
-(defn hand-type-points [hand]
+(defn- hand-type-points [hand]
   (-> hand
       (hand-type)
       (hand-type-to-points)))
 
-(defn strongest-first-card [cards1 cards2]
+(defn- strongest-first-card [cards1 cards2]
   (loop [cards1  (:hand-int cards1)
          cards2 (:hand-int cards2)]
     (let [c1 (first cards1)
@@ -65,7 +65,7 @@
         (recur (rest cards1) (rest cards2))
         (compare c1 c2)))))
 
-(defn type-of-hand-and-strongest-card [cards1 cards2]
+(defn- type-of-hand-and-strongest-card [cards1 cards2]
   (let [hand-type1-points  (hand-type-points cards1)
         hand-type2-points (hand-type-points cards2)]
     (if (= hand-type1-points hand-type2-points)
@@ -94,7 +94,7 @@
                                 (compare (first %2) (first %1))
                                 (compare  c2 c1))))
 
-(defn add-jokers [freq]
+(defn- add-jokers [freq]
   (if (c/one? (count freq))
     freq
     (let [joker-count (get freq (card-to-int-joker \J) 0)
@@ -102,7 +102,7 @@
           highest-freq-card (ffirst (sort by-best-to-add-jokers no-joker-freq))]
       (update no-joker-freq highest-freq-card #(+ % joker-count)))))
 
-(defn parse-part2 [inp]
+(defn- parse-part2 [inp]
   (->> (str/split-lines inp)
        (map #(str/split % #" "))
        (map (fn [[hand bid]]
