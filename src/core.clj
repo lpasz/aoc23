@@ -73,3 +73,15 @@
 
 (defn transpose [matrix]
   (apply map vector matrix))
+
+(defn remove-first [x coll]
+  (lazy-seq
+   (when (seq coll)
+     (let [[y & ys] coll]
+       (if (x y)
+         ys
+         (cons y (remove-first x ys)))))))
+
+
+
+
