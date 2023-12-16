@@ -60,9 +60,10 @@
     (for [[y dir] [[-1 "➡️"] [n "⬅️"]]]
       [[y x] dir])))
 
-(defn- edges [n]
-  (c/flatten-once (concat (generate-borders-up-down n)
-                          (generate-borders-left-right n))))
+(defn- edges [inp]
+  (let [n (count (str/split-lines inp))]
+    (c/flatten-once (concat (generate-borders-up-down n)
+                            (generate-borders-left-right n)))))
 
 (defn part1
   ([inp] (part1 inp start-coords-and-dir))
@@ -73,17 +74,15 @@
         (dec))))
 
 (defn part2 [inp]
-  (->> (str/split-lines inp)
-       (count)
-       (edges)
+  (->> (edges inp)
        (map #(part1 inp %))
        (reduce max)))
 
 (comment
-  (part1 exp1-input)
-  (part1 part1-input)
-  (part2 exp1-input)
+  (assert (= 46 (part1 exp1-input)))
+  (assert (= 7034 (part1 part1-input)))
+  (assert (= 51 (part2 exp1-input)))
   ;; a bit slow
-  (part2 part1-input)
+  (assert (= 7759 (part2 part1-input)))
   ;;
   )
