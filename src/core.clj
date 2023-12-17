@@ -50,13 +50,15 @@
                "/"
                ~file)))
 
-(defn to-matrix [inp]
-  (->> (if (string? inp)
-         (str/split-lines inp)
-         inp)
-       (map-indexed (fn [idy line] (->> line (map-indexed (fn [idx c] [[idx idy] c])))))
-       (flatten-once)
-       (into (sorted-map))))
+(defn to-matrix
+  ([inp] (to-matrix inp identity identity))
+  ([inp line-parse item-parse]
+   (->> (if (string? inp)
+          (str/split-lines inp)
+          inp)
+        (map-indexed (fn [idy line] (->> line line-parse (map-indexed (fn [idx c] [[idx idy] (item-parse c)])))))
+        (flatten-once)
+        (into (sorted-map)))))
 
 (defn print-matrix [mtx]
   (println "")
