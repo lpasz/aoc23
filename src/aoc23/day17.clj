@@ -1,7 +1,6 @@
 (ns aoc23.day17
   "Clumsy Crucible"
-  (:require [core :as c]
-            [clojure.data.priority-map :refer [priority-map]]))
+  (:require [core :as c]))
 
 (def exp1-input (c/get-input "exp1.txt"))
 (def part1-input (c/get-input "part1.txt"))
@@ -34,13 +33,12 @@
        (partition 5)))
 
 (defn- dijkstra [min max end mtx]
-  (loop [queue (priority-map [0 0 0 0 :->]   [0 0 0 0 :->]
-                             [0 0 0 0 :down] [0 0 0 0 :down])
+  (loop [queue (sorted-map [0 0 0 0 :->]   [0 0 0 0 :->]
+                           [0 0 0 0 :down] [0 0 0 0 :down])
          seen #{}]
     (when-let [[[heat-loss deep x y dir] _] (first queue)]
       (cond (= [x y] end) heat-loss
-            (seen [x y dir]) (recur (pop queue) seen)
-            ;; (< 10 (count queue)) :stop
+            (seen [x y dir]) (recur (dissoc queue [heat-loss deep x y dir]) seen)
             :else (recur (reduce (fn [acc [heat-loss deep x y dir]]
                                    (assoc acc
                                           [heat-loss deep x y dir]
