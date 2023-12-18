@@ -86,6 +86,26 @@
 (defn reject [pred coll]
   (filter #(not (pred %)) coll))
 
+(defn shoelaces-formula-area
+  "We are using the polygon version.
+   See more: https://en.wikipedia.org/wiki/Shoelace_formula"
+  [polygon-points]
+  (->> polygon-points
+       (partition 2 1)
+       (map (fn [[[x1 y1] [x2 y2]]] (* (+ y1 y2) (- x1 x2))))
+       (reduce +)
+       (then [n] (quot n 2))
+       (abs)))
 
+(defn pick-theorem-internal-points
+  "Normaly used to find the area, since we found the area with shoelace, we are using it to get the number of internal points.
+   See more: https://en.wikipedia.org/wiki/Pick%27s_theorem"
+  [area polygon-points-cnt]
+  (- area (- (quot polygon-points-cnt 2) 1)))
+
+;; (fn [[x y z]] [z y x])
+;; (ffn [x y z] [z y x])
+;; (fun-call [1 2 3]) 
+;; (defn flatfn [])
 
 

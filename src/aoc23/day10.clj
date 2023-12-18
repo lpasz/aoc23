@@ -51,24 +51,6 @@
         (recur (walk-one-step mtx curr-dir-pos)
                (conj positions position))))))
 
-
-(defn- shoelaces-formula-area
-  "We are using the polygon version.
-   See more: https://en.wikipedia.org/wiki/Shoelace_formula"
-  [polygon-points]
-  (->> polygon-points
-       (partition 2 1)
-       (map (fn [[[x1 y1] [x2 y2]]] (* (+ y1 y2) (- x1 x2))))
-       (reduce +)
-       (c/then [n] (quot n 2))
-       (abs)))
-
-(defn- pick-theorem-internal-points
-  "Normaly used to find the area, since we found the area with shoelace, we are using it to get the number of internal points.
-   See more: https://en.wikipedia.org/wiki/Pick%27s_theorem"
-  [area polygon-points]
-  (- area (- (quot (count polygon-points) 2) 1)))
-
 (defn part1 [inp]
   (let [mtx (c/to-matrix inp)
         pipe-loop-points (find-pipe-loop mtx (find-start mtx))]
@@ -77,8 +59,8 @@
 (defn part2 [inp]
   (let [mtx (c/to-matrix inp)
         pipe-loop-points (find-pipe-loop mtx (find-start mtx))
-        pipe-loop-area (shoelaces-formula-area pipe-loop-points)
-        points-inside-loop (pick-theorem-internal-points pipe-loop-area pipe-loop-points)]
+        pipe-loop-area (c/shoelaces-formula-area pipe-loop-points)
+        points-inside-loop (c/pick-theorem-internal-points pipe-loop-area (count pipe-loop-points))]
     points-inside-loop))
 
 (comment
