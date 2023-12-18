@@ -17,7 +17,7 @@
     :->   [(+ x n) y]
     :<-   [(- x n) y]))
 
-(defn- recalc [heat-loss deep x y dir min max mtx]
+(defn- recalc [[heat-loss deep x y dir] min max mtx]
   (->> (for [ndir (dir directions)]
          (for [i (range min (inc max))
                :let [ncoord  (next-coord x y i ndir)]
@@ -30,21 +30,16 @@
             ncoord
             ndir]))
        (flatten)
-       (partition 5)))
+       (partition 5)
+       (map vec)))
 
 (defn- dijkstra [min max end mtx]
-  (loop [queue (sorted-map [0 0 0 0 :->]   [0 0 0 0 :->]
-                           [0 0 0 0 :down] [0 0 0 0 :down])
+  (loop [queue (sorted-set [0 0 0 0 :->] [0 0 0 0 :down])
          seen #{}]
-    (when-let [[[heat-loss deep x y dir] _] (first queue)]
+    (when-let [[heat-loss _deep x y dir :as args] (first queue)]
       (cond (= [x y] end) heat-loss
-            (seen [x y dir]) (recur (dissoc queue [heat-loss deep x y dir]) seen)
-            :else (recur (reduce (fn [acc [heat-loss deep x y dir]]
-                                   (assoc acc
-                                          [heat-loss deep x y dir]
-                                          [heat-loss deep x y dir]))
-                                 (dissoc queue [heat-loss deep x y dir])
-                                 (recalc heat-loss deep x y dir min max mtx))
+            (seen [x y dir]) (recur (disj queue args) seen)
+            :else (recur (reduce conj (disj queue args) (recalc args min max mtx))
                          (conj seen [x y dir]))))))
 
 (defn part1 [inp end-at]
