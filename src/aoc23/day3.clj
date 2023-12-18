@@ -64,7 +64,7 @@
 (defn- number-surroundings [items]
   (->> items
        (c/filter-by-key int?)
-       (map (fn [[k v]] [k (into #{} (mapcat c/surrounding-xy v))]))))
+       (map (c/fnvec identity #(into #{} (mapcat c/surrounding-xy %))))))
 
 (defn- number-surrounded-by-gear [[number surrounding-xy-positions] gear-position]
   (when (surrounding-xy-positions gear-position)
