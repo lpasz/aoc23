@@ -2,6 +2,20 @@
   (:require [clojure.pprint :as pp]
             [clojure.string :as str]))
 
+;; create a `.clj-kondo/config.edn` and add the line below
+;; {:lint-as {core/then clojure.core/fn}}
+(defmacro then
+  ([fun value] `(~fun ~value))
+  ([args body value] `((fn ~args ~body) ~value)))
+
+(defn fnvec [& funs]
+  "create a function that receives a coll/vector and 
+   returns a vector with first fn applied to first elem, second to second
+   
+   example: 
+   ((fnvec inc dec core/parse-int) [0 3 \"3\"]) #=> [1 2 3]"
+  (fn [args] (mapv (fn [fun args] (fun args)) funs args)))
+
 (defn map-key [fun coll]
   (map (fn [[key value]] [(fun key) value]) coll))
 
@@ -103,9 +117,5 @@
   [area polygon-points-cnt]
   (- area (- (quot polygon-points-cnt 2) 1)))
 
-;; (fn [[x y z]] [z y x])
-;; (ffn [x y z] [z y x])
-;; (fun-call [1 2 3]) 
-;; (defn flatfn [])
 
 
