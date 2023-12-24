@@ -61,15 +61,15 @@
        (map (fn [[k v]] [k  (map rest v)]))
        (map (fn [[key vs]]
               (let  [v (group-by first vs)
-                     lower (->> (concat (get v "<" [])
-                                        (get v "<=" []))
-                                (map last)
-                                (do-not-empty min 4000))
-                     bigger (->> (concat (get v ">" [])
-                                         (get v ">=" []))
-                                 (map last)
-                                 (do-not-empty max 1))]
-                [key (list (min lower bigger) (max lower bigger))])))
+                     lower-than (->> (concat (get v "<" [])
+                                             (get v "<=" []))
+                                     (map last)
+                                     (do-not-empty min 4000))
+                     greather-than (->> (concat (get v ">" [])
+                                                (get v ">=" []))
+                                        (map last)
+                                        (do-not-empty max 1))]
+                [key (sort [lower-than greather-than])])))
        (into {:x '(1 4000) :m '(1 4000) :a '(1 4000) :s '(1 4000)})))
 
 
