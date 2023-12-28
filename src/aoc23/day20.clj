@@ -6,13 +6,13 @@
 (def exp2-input (c/get-input "exp2.txt"))
 (def part1-input (c/get-input "part1.txt"))
 
-(defn receive-from [coll]
+(defn- receive-from [coll]
   (->> coll
        (map (fn [[key value]] [(re-find #"\w+" key) (vec (re-seq #"\w+" value))]))
        (into {})
        (c/revert-map)))
 
-(defn parse [coll]
+(defn- parse [coll]
   (let [receives-from (receive-from coll)]
     (->> coll
          (map (fn [[key value]]
@@ -25,27 +25,30 @@
          (into {}))))
 
 
-(defn parse-inp [inp]
+(defn- parse-inp [inp]
   (->> (re-seq #"(?m)(.*) -> (.*)" inp)
        (map rest)
        (parse)))
 
-(defn queue [coll]
+(defn- queue [coll]
   (reduce conj clojure.lang.PersistentQueue/EMPTY coll))
 
-(defn press-button [[inp low high results] n]
+(defn update-part1 [part1 signal]
+  (if (true? signal)
+    (update part1 :high inc)
+    (update part1 :low inc)))
+
+(defn- press-button [[inp part1 part2] n]
   (loop [queue (queue [["button" false "broadcaster"]])
          inp inp
-         low low
-         high high
-         results results]
+         part1 part1
+         part2 part2]
     (if (empty? queue)
-      [inp low high results]
+      [inp part1 part2]
       (let [[sender signal receiver] (peek queue)
-            ;; _ (println (str sender " -"  (case signal true "high" false "low" nil "nil") "-> " receiver))
             queue (pop queue)
             itm (inp receiver)
-            [high low] (if (true? signal) [(inc high) low] [high (inc low)])
+            part1 (update-part1 part1 signal)
             [send-signal inp] (case (:type itm nil)
                                 \% (cond
                                      (true? signal) [nil inp]
@@ -63,29 +66,29 @@
                                 [nil inp])
             ;; _ (c/insp [receiver send-signal (:send-to itm)])
             send-to (->> (:send-to itm) (map (fn [send-to] [receiver send-signal send-to])))
-            results (cond
-                      (= ["ss" true "ql"] [sender signal receiver]) (assoc results "ss" n)
-                      (= ["fz" true "ql"] [sender signal receiver]) (assoc results "fz" n)
-                      (= ["fh" true "ql"] [sender signal receiver]) (assoc results "fh" n)
-                      (= ["mf" true "ql"] [sender signal receiver]) (assoc results "mf" n)
-
-                      :else results)]
+            part2 (cond
+                    (= ["ss" true "ql"] [sender signal receiver]) (assoc part2 "ss" n)
+                    (= ["fz" true "ql"] [sender signal receiver]) (assoc part2 "fz" n)
+                    (= ["fh" true "ql"] [sender signal receiver]) (assoc part2 "fh" n)
+                    (= ["mf" true "ql"] [sender signal receiver]) (assoc part2 "mf" n)
+                    :else part2)]
         (if (nil? send-signal)
-          (recur queue inp low high results)
+          (recur queue inp part1 part2)
           (recur (reduce conj queue send-to)
                  inp
-                 low
-                 high
-                 results))))))
+                 part1
+                 part2))))))
 
 (defn part1 [inp]
   (->> (range 1 (inc 1000))
-       (reduce press-button [(parse-inp inp) 0 0 {}])
-       (c/then [[_inp low high]] (* low high))))
+       (reduce press-button [(parse-inp inp) {:high 0 :low 0} {}])
+       (second)
+       (vals)
+       (reduce *)))
 
 (defn part2 [inp]
   (->> (range 1 (inc 4000))
-       (reduce press-button [(parse-inp inp) 0 0 {}])
+       (reduce press-button [(parse-inp inp) {:high 0 :low 0} {}])
        (last)
        (vals)
        (reduce *)))
@@ -94,4 +97,6 @@
   (assert (= 32000000 (part1 exp1-input)))
   (assert (= 11687500 (part1 exp2-input)))
   (assert (= 787056720 (part1 part1-input)))
-  (assert (= 212986464842911 (part2 part1-input))))
+  (assert (= 212986464842911 (part2 part1-input)))
+  ;;
+  )
