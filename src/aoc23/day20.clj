@@ -35,9 +35,6 @@
        (map rest)
        (parse)))
 
-(defn- queue [coll]
-  (reduce conj clojure.lang.PersistentQueue/EMPTY coll))
-
 (defn update-part1 [part1 signal]
   (if (high-pulse? signal)
     (update part1 :high inc)
@@ -79,7 +76,7 @@
   (map (fn [receiver] [sender signal receiver]) send-to-modules))
 
 (defn- press-button [[state part1 part2] n]
-  (loop [queue (queue [["button" false "broadcaster"]])
+  (loop [queue (c/queue [["button" false "broadcaster"]])
          state state
          part1 part1
          part2 part2]

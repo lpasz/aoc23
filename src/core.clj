@@ -34,6 +34,9 @@
 (defn flatten-once [coll]
   (mapcat identity coll))
 
+(defn queue [coll]
+  (reduce conj clojure.lang.PersistentQueue/EMPTY coll))
+
 (defn parse-int
   "Either parse the string to int, or return nil"
   [int]
@@ -44,6 +47,12 @@
   [[(dec x) (inc y)] [x (inc y)] [(inc x) (inc y)]
    [(dec x) y]                   [(inc x) y]
    [(dec x) (dec y)] [x (dec y)] [(inc x) (dec y)]])
+
+(defn up-down-left-right [[x y]]
+  [[x (dec y)]
+   [x (inc y)]
+   [(inc x) y]
+   [(dec x) y]])
 
 (defn insp
   ([v] (pp/pprint v) v)

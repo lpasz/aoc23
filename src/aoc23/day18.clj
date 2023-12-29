@@ -22,9 +22,9 @@
   (->> hex (take 5) (cons "16r") (str/join) (read-string)))
 
 (defn- reinstruct [hex]
-  (->> (re-seq #"[0-9|a-z]+" hex)
-       (first)
-       (c/then (juxt last-hex-to-dir first-5-hex-to-int))))
+  ((juxt last-hex-to-dir first-5-hex-to-int)
+   (->> (re-seq #"[0-9|a-z]+" hex)
+        (first))))
 
 (defn- parse-input [inp]
   (->> (str/split-lines inp)
