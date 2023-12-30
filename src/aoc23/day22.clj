@@ -5,6 +5,7 @@
 
 (def exp1-input (c/get-input "exp1.txt"))
 (def part1-input (c/get-input "part1.txt"))
+(def part1-other-input (c/get-input "part1-other.txt"))
 
 (defn by-z [[_x _y z]] z)
 
@@ -28,40 +29,48 @@
 
 (defn brick-drop [bricks]
   (loop [bseq (sort-by by-first-z bricks)
-         bricks bricks]
+         bricks bricks
+         occupied-space (set (c/flatten-once (vals bricks)))]
     (if (empty? bseq)
       bricks
-      (let [[k b] (first bseq)
+      (let [[k brick-coords] (first bseq)
             bseq (rest bseq)
             bricksn (dissoc bricks k)
-            occupied-space (->> bricksn
-                                (vals)
-                                (c/flatten-once)
-                                (set))
-            down (move-down-if-possible b occupied-space)]
+            occupied-space-after (reduce disj occupied-space brick-coords)
+            down (move-down-if-possible brick-coords occupied-space-after)]
         (if down
-          (recur bseq (assoc bricksn k down))
-          (recur bseq bricks))))))
-
-(def supports inc)
-(def supported dec)
-
-(defn check-if-brick [bricks bfn]
-  (let [rev-bricks (c/revert-map bricks)]
-    (loop [bseq (seq bricks)
-           sups-by {}]
-      (if (empty? bseq)
-        sups-by
-        (let [[k b] (first bseq)]
-          (if-let [sup-by (->> (keep (fn [[x y z]] (let [k1 (first (rev-bricks [x y (bfn z)]))]
-                                                     (when-not (= k1 k)
-                                                       k1))) b)
-                               (set))]
-            (recur (rest bseq) (reduce (fn [acc s] (update acc k #(conj % s))) sups-by sup-by))
-            (recur (rest bseq) sups-by)))))))
+          (recur bseq
+                 (assoc bricksn k down)
+                 (reduce conj occupied-space-after down))
+          (recur bseq bricks occupied-space))))))
 
 (defonce bricks (brick-drop (parse part1-input)))
+(defonce bricks-other (brick-drop (parse part1-other-input)))
 (defonce ex-bricks (brick-drop (parse exp1-input)))
+
+(defn fall-colide [[brick-id brick-coords] rev-bricks]
+  (->> (keep (fn [[x y z]]
+               (let [below-brick [x y (dec z)]
+                     colide-brick-id (first (rev-bricks below-brick))]
+                 (when-not (= colide-brick-id brick-id)
+                   colide-brick-id))) brick-coords)
+       (set)))
+
+(defn brick-supported-by [bricks]
+  (let [rev-bricks (c/revert-map bricks)]
+    (loop [bseq  (sort-by by-first-z bricks)
+           supported-by {}]
+      (if (empty? bseq)
+        supported-by
+        (if-let [sup-by (fall-colide (first bseq) rev-bricks)]
+          (recur (rest bseq) (reduce (fn [acc s] (update acc (ffirst bseq) #(conj % s))) supported-by sup-by)))))))
+
+
+
+
+
+(brick-supported-by bricks)
+
 
 (defn supported-by-more-than-one [bricks-supported-by]
   (reduce (fn [acc [_ vs]]
@@ -73,20 +82,19 @@
 
 (defn supported-by-one [bricks-supported-by]
   (reduce (fn [acc [_ vs]]
-            (if (= (count vs) 1)
-              (into acc vs)
-              acc))
-          #{}
+            (case (count vs)
+              1 (update acc :not-removable #(into % vs))
+              (update acc :removable #(into % vs))))
+          {:removable #{}
+           :not-removable #{}}
           bricks-supported-by))
 
 (defn part1-f [b]
-  (let [supported-by (check-if-brick b supported)
-        supports (check-if-brick b supports)
-        not-support (set/difference (set (keys b)) (set (keys supports)))]
-    
-    (set/difference (into not-support (supported-by-more-than-one supported-by))
-     (supported-by-one supported-by)
-    )))
+  (let [supported-by (brick-supported-by b)
+        {:keys [removable not-removable]} (supported-by-one supported-by)]
+    {:all (count b)
+     :not-removable (count not-removable)
+     :diff (- (count b) (count not-removable))}))
 
 
 
@@ -95,7 +103,10 @@
 (count (part1-f bricks))
 
 (part1-f ex-bricks)
-(count (part1-f bricks))
+(part1-f bricks)
+(part1-f bricks-other)
+
+(count (part1-f bricks-other))
 
 (set/difference #{0 1 2 3 4 5 6} #{0 1 2 3 4 5})
 
