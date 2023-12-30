@@ -127,13 +127,15 @@
   (- area (- (quot polygon-points-cnt 2) 1)))
 
 
-(defn revert-map [m]
-  (reduce (fn [acc [k vs]]
-            (reduce (fn [acc v]
-                      (if (acc v)
-                        (update acc v #(conj % k))
-                        (assoc acc v [k])))
-                    acc
-                    vs))
-          {}
-          m))
+(defn revert-map
+  ([m] (revert-map m []))
+  ([m type]
+   (reduce (fn [acc [k vs]]
+             (reduce (fn [acc v]
+                       (if (acc v)
+                         (update acc v #(conj % k))
+                         (assoc acc v (into type [k]))))
+                     acc
+                     vs))
+           {}
+           m)))
