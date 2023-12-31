@@ -26,13 +26,13 @@
 (defn part1 [inp]
   (->> (parse-input inp)
        (map predict-next)
-       (reduce +)))
+       (c/sum)))
 
 (defn part2 [inp]
   (->> (parse-input inp)
        (map reverse)
        (map predict-next)
-       (reduce +)))
+       (c/sum)))
 
 (comment
   ;; example 1 - part 1

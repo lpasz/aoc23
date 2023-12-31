@@ -47,13 +47,13 @@
 (defn part1 [inp]
   (->> (parse-input inp)
        (pmap #(dfs-spring-pattern (first %) (second %) 0))
-       (reduce +)))
+       (c/sum)))
 
 (defn part2 [inp]
   (->> (parse-input inp)
        (pmap #(part2-fy % 5))
        (pmap #(dfs-spring-pattern (first %) (second %) 0))
-       (reduce +)))
+       (c/sum)))
 
 (comment
   (assert (= 21 (part1 exp1-input)))

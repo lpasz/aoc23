@@ -25,7 +25,7 @@
            [(+ heat-loss (->> (range 1 (inc i))
                               (map #(next-coord x y % ndir))
                               (map #(get mtx %))
-                              (reduce +)))
+                              (c/sum)))
             (inc deep)
             ncoord
             ndir]))

@@ -45,7 +45,7 @@
          (c/filter-by-value #{\O})
          (map #(-> % first second))
          (map #(- max-y %))
-         (reduce +))))
+         (c/sum))))
 
 (def improvements (atom {}))
 (def repeating (atom {}))

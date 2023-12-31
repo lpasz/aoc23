@@ -85,7 +85,7 @@
     (->> items
          (filter #(any-valid-path-in-rng % valid-path-rng))
          (mapcat vals)
-         (reduce +))))
+         (c/sum))))
 
 (defn part2 [inp]
   (->> (parse-input inp)
@@ -94,7 +94,7 @@
        (map calculate-valid-path-ranges)
        (map vals)
        (map #(reduce (fn [acc [lo hi]] (* acc (inc (- hi  lo)))) 1 %))
-       (reduce +)))
+       (c/sum)))
 
 (comment
   (assert (= 19114 (part1 exp1-input)))

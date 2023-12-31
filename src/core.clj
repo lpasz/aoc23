@@ -109,6 +109,12 @@
 (defn reject [pred coll]
   (filter #(not (pred %)) coll))
 
+(defn sum [coll]
+  (reduce + coll))
+
+(defn product [coll]
+  (reduce * coll))
+
 (defn shoelaces-formula-area
   "We are using the polygon version.
    See more: https://en.wikipedia.org/wiki/Shoelace_formula"
@@ -116,7 +122,7 @@
   (->> polygon-points
        (partition 2 1)
        (map (fn [[[x1 y1] [x2 y2]]] (* (+ y1 y2) (- x1 x2))))
-       (reduce +)
+       (sum)
        (then [n] (quot n 2))
        (abs)))
 
@@ -139,6 +145,3 @@
                      vs))
            {}
            m)))
-
-(defn sum [coll]
-  (reduce + coll))

@@ -48,7 +48,7 @@
 (defn part1 [inp]
   (->> (str/split inp #"\n|,")
        (map hash-str)
-       (reduce +)))
+       (c/sum)))
 
 
 (defn part2 [inp]
@@ -60,7 +60,7 @@
        (map reverse)
        ;; calculate the focal power
        (mapcat #(map-indexed (fn [slot [_key box focal]]  (* (inc box) (inc slot) focal))  %))
-       (reduce +)))
+       (c/sum)))
 
 (comment
   (assert (= 1320 (part1 exp1-input)))

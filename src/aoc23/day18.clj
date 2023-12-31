@@ -38,7 +38,7 @@
 (defn- to-polygon-ext-pts-cnt [instructions]
   (->> instructions
        (map second)
-       (reduce +)))
+       (c/sum)))
 
 (defn- calc-lava-area [instructions]
   (let [polygon-edge-cnt (to-polygon-ext-pts-cnt instructions)

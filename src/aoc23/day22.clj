@@ -9,10 +9,8 @@
   (range (min p1 p2) (inc (max p1 p2))))
 
 (defn- get-positions [[x1 y1 z1 x2 y2 z2]]
-  (vec (for [x (rangex x1 x2)
-             y (rangex y1 y2)
-             z (rangex z1 z2)]
-         [x y z])))
+  (for [x (rangex x1 x2) y (rangex y1 y2) z (rangex z1 z2)]
+    [x y z]))
 
 (defn- parse-input [inp]
   (->> (re-seq #"(?m)(\d+),(\d+),(\d+)\~(\d+),(\d+),(\d+)" inp)
@@ -32,7 +30,10 @@
           (some occupied brick-down) brick-coords
           :else (or (next-brick-pos brick-down occupied) brick-down))))
 
-(defn by-lowest-z [[_id [[_x _y z]]]] z)
+(defn- by-lowest-z
+  "It will always start by lowest z, so we just get the first z coord"
+  [[_id [[_x _y z]]]]
+  z)
 
 (defn- brick-fall
   "Make the bricks fall to it's final position"

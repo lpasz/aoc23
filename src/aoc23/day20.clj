@@ -99,7 +99,7 @@
        (reduce press-button [(parse-inp inp) {:high 0 :low 0} {}])
        (second)
        (vals)
-       (reduce *)))
+       (c/product)))
 
 (defn part2 [inp]
   (->> (range 1 (inc 4000))

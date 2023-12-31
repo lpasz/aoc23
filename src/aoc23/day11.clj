@@ -60,7 +60,7 @@
        (keep (fn [[coord itm]] (when (= \# itm) coord)))
        (distance-from-galaxy-to-all-others)
        (vals)
-       (reduce +)))
+       (c/sum)))
 
 (defn part1 [inp]
   (sum-galaxy-distances inp 2))

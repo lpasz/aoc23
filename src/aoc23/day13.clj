@@ -60,7 +60,7 @@
        (map #(map seq (str/split-lines %)))
        (map #(find-reflections % pred))
        (map calc-reflections)
-       (reduce +)))
+       (c/sum)))
 
 (defn part1 [inp] (part inp reflection?))
 (defn part2 [inp] (part inp reflection-diff?))
