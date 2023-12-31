@@ -1,12 +1,9 @@
 (ns aoc23.day22
   "Sand Slabs"
-  (:require [core :as c]
-            [clojure.set :as set]
-            [clojure.string :as str]))
+  (:require [core :as c]))
 
 (def exp1-input (c/get-input "exp1.txt"))
 (def part1-input (c/get-input "part1.txt"))
-(def part1-other-input (c/get-input "part1-other.txt"))
 
 (defn parse-input [inp]
   (->> (re-seq #"(?m)(\d+),(\d+),(\d+)\~(\d+),(\d+),(\d+)" inp)
@@ -33,8 +30,8 @@
           (some occupied (get-positions brick-down)) brick
           :else (or (next-brick-pos brick-down occupied) brick-down))))
 
-(defn fallme [bricks]
-  (loop [bricks bricks
+(defn brick-fall [bricks]
+  (loop [bricks (sort-by #(nth % 2) bricks)
          bricks-after-falling []
          occupied {}]
     (if (empty? bricks)
@@ -46,21 +43,21 @@
             occupied (reduce #(assoc %1 %2 brick-next) occupied (get-positions brick-next))]
         (recur bricks bricks-after-falling occupied)))))
 
+(defn brick-fall-with-id [bricks]
+  (loop [bricks (sort-by #(nth (second %) 2) bricks)
+         bricks-after-falling []
+         occupied {}]
+    (if (empty? bricks)
+      bricks-after-falling
+      (let [[id brick] (first bricks)
+            bricks (rest bricks)
+            brick-next (next-brick-pos brick occupied)
+            bricks-after-falling (conj bricks-after-falling [id brick-next])
+            occupied (reduce #(assoc %1 %2 brick-next) occupied (get-positions brick-next))]
+        (recur bricks bricks-after-falling occupied)))))
 
-;; (defn fall [bricks]
-;;   (reduce (fn [[fallen occupied] brick]
-;;             (loop [cur brick
-;;                    nxt (step-down cur)]
-;;               (if (and (> (nth nxt 2) 0)
-;;                        (not (some #(get occupied %) (get-positions nxt))))
-;;                 (recur nxt (step-down nxt))
-;;                 [(conj fallen cur)
-;;                  (reduce #(assoc %1 %2 cur) occupied (get-positions cur))])))
-;;           [[] {}]
-;;           bricks))
-
-(defn supports-and-supported-by [fallen occupied]
-  (->> fallen
+(defn supports-and-supported-by [bricks-after-fall occupied]
+  (->> bricks-after-fall
        (reduce (fn [acc brick]
                  (let [brick-pos (get-positions brick)
                        occupied-by-others (reduce dissoc occupied brick-pos)
@@ -73,45 +70,6 @@
        (c/then [supported-by-bricks]
                [(c/revert-map supported-by-bricks #{}) supported-by-bricks])))
 
-
-;; (defn check-field [fallen occupied]
-;;   (reduce (fn [[above below] brick]
-;;             (let [curposs (get-positions brick)]
-;;               (reduce (fn [[a b] pos]
-;;                         (if (and (get occupied pos)
-;;                                  (not (some #{pos} curposs)))
-;;                           [(assoc a (get occupied pos)
-;;                                   (conj (get a (get occupied pos) #{})
-;;                                         brick))
-;;                            (assoc b brick (conj (get b brick #{})
-;;                                                 (get occupied pos)))]
-;;                           [a b]))
-;;                       [above below]
-;;                       (get-positions (step-down brick)))))
-;;           [{} {}]
-;;           fallen))
-
-(defn check-fall-me [support-bricks support-by-bricks wouldfall brick]
-  (if (some #{brick} wouldfall)
-    wouldfall
-    (->> (get support-bricks brick)
-         (reduce (fn [newfall supported-brick]
-                   (if (set/subset? (get support-by-bricks supported-brick) newfall)
-                     (check-fall-me support-bricks support-by-bricks newfall supported-brick)
-                     newfall))
-                 (conj wouldfall brick)))))
-
-(defn check-fall  [above below wouldfall brick]
-  (c/insp [wouldfall brick])
-  (if (some #{brick} wouldfall)
-    wouldfall
-    (reduce (fn [newfall abovebrick]
-              (if (set/subset? (get below abovebrick) newfall)
-                (check-fall above below newfall abovebrick)
-                newfall))
-            (conj wouldfall brick)
-            (get above brick))))
-
 (defn check-if-would-fall [brick support-bricks support-by-bricks]
   (->> (support-bricks brick)
        (map support-by-bricks)
@@ -119,16 +77,33 @@
        (not-empty)))
 
 (defn part1 [inp]
-  (let [bricks (sort-by #(nth % 2) (parse-input inp))
-        [fallen occupied] (fallme bricks)
-        [support-bricks supporte-by-bricks] (supports-and-supported-by fallen occupied)]
-    (- (count fallen)
-       (->> fallen
+  (let [bricks (parse-input inp)
+        [bricks-after-fall occupied] (brick-fall bricks)
+        [support-bricks supporte-by-bricks] (supports-and-supported-by bricks-after-fall occupied)]
+    (- (count bricks-after-fall)
+       (->> bricks-after-fall
             (filter #(check-if-would-fall % support-bricks supporte-by-bricks))
             (count)))))
 
-(defn part2 [inp])
+(defn part2 [inp]
+  (let [bricks (parse-input inp)
+        [bricks-after-fall occupied] (brick-fall bricks)
+        [support-bricks supporte-by-bricks] (supports-and-supported-by bricks-after-fall occupied)]
+    (->> bricks-after-fall
+         (filter #(check-if-would-fall % support-bricks supporte-by-bricks))
+         (map (fn [ubrick]
+                (let [other-bricks (map-indexed (fn [id itm] [id itm]) (c/remove-first #{ubrick} bricks-after-fall))
+                      other-bricks-set (set other-bricks)
+                      other-bricks-after-fall  (brick-fall-with-id other-bricks)]
+                  (->> other-bricks-after-fall
+                       (c/reject other-bricks-set)
+                       (count)))))
+         (reduce +))))
 
-(part1 exp1-input)
-(part1 part1-input)
-
+(comment
+  (assert (= 5 (part1 exp1-input)))
+  (assert (= 393 (part1 part1-input)))
+  (assert (= 7 (part2 exp1-input)))
+  (assert (= 58440 (part2 part1-input)))
+  ;;
+  )
