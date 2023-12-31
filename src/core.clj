@@ -139,3 +139,6 @@
                      vs))
            {}
            m)))
+
+(defn sum [coll]
+  (reduce + coll))
