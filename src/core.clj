@@ -51,8 +51,14 @@
 (defn up-down-left-right [[x y]]
   [[x (dec y)]
    [x (inc y)]
-   [(inc x) y]
-   [(dec x) y]])
+   [(dec x) y]
+   [(inc x) y]])
+
+(defn directions [[x y]]
+  {:up   [x (dec y)]
+   :down [x (inc y)]
+   :<-   [(dec x) y]
+   :->   [(inc x) y]})
 
 (defn insp
   ([v] (pp/pprint v) v)
