@@ -151,3 +151,14 @@
                      vs))
            {}
            m)))
+
+(defn partition-while [pred-prev-curr coll]
+  (loop [coll coll
+         previous nil
+         c []
+         result []]
+    (if (empty? coll)
+      result
+      (cond (nil? previous) (recur (rest coll) (first coll) (conj c (first coll)) result)
+            (pred-prev-curr previous (first coll)) (recur (rest coll) (first coll) (conj c (first coll)) result)
+            :else (recur (rest coll) (first coll) [(first coll)] (conj result c))))))
