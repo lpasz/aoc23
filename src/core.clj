@@ -162,3 +162,63 @@
       (cond (nil? previous) (recur (rest coll) (first coll) (conj c (first coll)) result)
             (pred-prev-curr previous (first coll)) (recur (rest coll) (first coll) (conj c (first coll)) result)
             :else (recur (rest coll) (first coll) [(first coll)] (conj result c))))))
+
+(def ^:private neg-inf Double/NEGATIVE_INFINITY)
+
+(defn update-costs-longest [g costs unvisited curr]
+  (let [curr-cost (get costs curr)]
+    (reduce-kv
+     (fn [c nbr nbr-cost]
+       (if (unvisited nbr)
+         (update-in c [nbr] max (+ curr-cost nbr-cost))
+         c))
+     costs
+     (get g curr))))
+
+(defn dijkstra-longest
+  ([g src]
+   (dijkstra-longest g src nil))
+  ([g src dst]
+   (loop [costs (assoc (zipmap (keys g) (repeat neg-inf)) src 0)
+          curr src
+          unvisited (disj (apply hash-set (keys g)) src)]
+     (cond
+       (= curr dst) (select-keys costs [dst])
+
+       (or (empty? unvisited) (= neg-inf (get costs curr))) costs
+
+       :else (let [next-costs (update-costs-longest g costs unvisited curr)
+                   next-node (apply max-key next-costs unvisited)]
+               (recur next-costs next-node (disj unvisited next-node)))))))
+
+(def ^:private inf Double/POSITIVE_INFINITY)
+
+(defn update-costs-shortest
+  [g costs unvisited curr]
+  (let [curr-cost (get costs curr)]
+    (reduce-kv
+     (fn [c nbr nbr-cost]
+       (if (unvisited nbr)
+         (update-in c [nbr] min (+ curr-cost nbr-cost))
+         c))
+     costs
+     (get g curr))))
+
+(defn dijkstra-shortest
+  ([g src]
+   (dijkstra-shortest g src nil))
+  ([g src dst]
+   (loop [costs (assoc (zipmap (keys g) (repeat inf)) src 0)
+          curr src
+          unvisited (disj (apply hash-set (keys g)) src)]
+     (cond
+       (= curr dst)
+       (select-keys costs [dst])
+
+       (or (empty? unvisited) (= inf (get costs curr)))
+       costs
+
+       :else
+       (let [next-costs (update-costs-shortest g costs unvisited curr)
+             next-node (apply min-key next-costs unvisited)]
+         (recur next-costs next-node (disj unvisited next-node)))))))
