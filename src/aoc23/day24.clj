@@ -12,13 +12,13 @@
 (def part1-rng (partial in-range 200000000000000 400000000000000))
 (def exp1-rng (partial in-range 7 27))
 
-(defn after? [[x y vx vy]]
+(defn after? [[x y _z vx vy _vz]]
   (let [aftr #({-1 < 1 >} (compare % 0))]
     (fn [[nx ny]]
       (and ((aftr vx) nx x)
            ((aftr vy) ny y)))))
 
-(defn next-point-xy [[x y vx vy]]
+(defn next-point [[x y _ vx vy _]]
   [(+ x vx) (+ y vy)])
 
 (defn compute-line [[x1 y1] [x2 y2]]
@@ -40,9 +40,10 @@
        (map (fn [[x y z vx vy vz]]
               {:raw [x y z vx vy vz]
                :pt1 [x y]
-               :pt2 (next-point-xy [x y vx vy])
-               :after-xy? (after? [x y z vx vy])}))
-       (map (fn [{:keys [pt1 pt2] :as m}] (merge m (compute-line pt1 pt2))))))
+               :pt2 (next-point [x y z vx vy vz])
+               :after? (after? [x y z vx vy vz])}))
+       (map (fn [{:keys [pt1 pt2] :as m}]
+              (merge m (compute-line pt1 pt2))))))
 
 
 (defn intercept [line1 line2]
@@ -78,6 +79,9 @@
   [x y (+ vx vel1) (+ vy vel2)])
 
 (defn to-v3  [[x y z vx vy vz]] {:x x :y y :z z :vx vx :vy vy :vz vz})
+
+(defn next-point-xy [[x y vx vy]]
+  [(+ x vx) (+ y vy)])
 
 (defn to-line [hailstone vx vy]
   (let [hailstone (update-velocity hailstone vx vy)
@@ -125,7 +129,7 @@
 (comment
   (assert (= 2 (part1 exp1-input exp1-rng)))
   (assert (= 12740 (part1 part1-input part1-rng)))
-  (assert (= 47 (part2 exp1-input))) 
+  (assert (= 47 (part2 exp1-input)))
   (assert (= 741991571910536 (part2 part1-input)))
   ;;
   )
