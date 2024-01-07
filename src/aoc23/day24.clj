@@ -61,20 +61,6 @@
        (into #{})
        (map vec)))
 
-(defn part1 [inp rng]
-  (->> (parse inp)
-       (combinations)
-       (keep (fn [[line1 line2]]
-               (when-let [intersect (intercept line1 line2)]
-                 [(assoc line1 :intersect intersect)
-                  (assoc line2 :intersect intersect)])))
-       (filter (fn [[line1 line2]] (and ((:after? line1) (:intersect line1))
-                                        ((:after? line2) (:intersect line2)))))
-       (map first)
-       (map :intersect)
-       (filter rng)
-       (count)))
-
 (defn update-velocity [[x y vx vy] vel1 vel2]
   [x y (+ vx vel1) (+ vy vel2)])
 
@@ -114,16 +100,30 @@
          (filter #(not (nil? %)))
          (first))))
 
+(defn part1 [inp rng]
+  (->> (parse inp)
+       (combinations)
+       (keep (fn [[line1 line2]]
+               (when-let [intersect (intercept line1 line2)]
+                 [(assoc line1 :intersect intersect)
+                  (assoc line2 :intersect intersect)])))
+       (filter (fn [[line1 line2]] (and ((:after? line1) (:intersect line1))
+                                        ((:after? line2) (:intersect line2)))))
+       (map first)
+       (map :intersect)
+       (filter rng)
+       (count)))
+
 (defn part2 [inp]
   (let [raw (->> (parse-raw inp))
         rawm (map to-v3 raw)
         min-velocity (->> [:vx :vy :vz] (map #(c/min-by % rawm)) (reduce min))
         max-velocity (->> [:vx :vy :vz] (map #(c/max-by % rawm)) (reduce max))
-        max-rng (max (abs min-velocity) (abs max-velocity))
+        max-abs (max (abs min-velocity) (abs max-velocity))
         raw-xy (map (fn [[x y _z vx vy _vz]] [x y vx vy]) raw)
         raw-xz (map (fn [[x _y z vx _vy vz]] [x z vx vz]) raw)
-        [x y _ _] (relative-rock-finding raw-xy (- max-rng) max-rng)
-        [_ z _ _] (relative-rock-finding raw-xz (- max-rng) max-rng)]
+        [x y _ _] (relative-rock-finding raw-xy (- max-abs) max-abs)
+        [_ z _ _] (relative-rock-finding raw-xz (- max-abs) max-abs)]
     (+ x y z)))
 
 (comment
