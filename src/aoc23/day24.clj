@@ -24,10 +24,10 @@
 
 (defn next-point
   "Given a starting point and velocity returns the next point"
-  [[x y _ vx vy _]]
+  [[x y vx vy]]
   [(+ x vx) (+ y vy)])
 
-(defn compute-line 
+(defn compute-line
   " If lines are not parallel return the slope and the offset of the line, this is the line equation"
   [[x1 y1] [x2 y2]]
   (when-not (zero? (- x2 x1))
@@ -47,7 +47,7 @@
   (->> (parse-raw inp)
        (map (fn [[x y z vx vy vz]]
               {:pt1 [x y]
-               :pt2 (next-point [x y z vx vy vz])
+               :pt2 (next-point [x y vx vy])
                :after? (after? [x y z vx vy vz])}))
        (map (fn [{:keys [pt1 pt2] :as m}]
               (merge m (compute-line pt1 pt2))))))
@@ -61,7 +61,10 @@
                  (:offset line1))]
         [x y]))))
 
-(defn combinations [coll]
+(defn combinations
+  "Give all the pair combinations of hailstones.
+   [1 2 3 4] => ([4 3] [1 4] [4 2] [1 3] [1 2] [3 2])"
+  [coll]
   (->> (for [h1 coll
              h2 coll
              :when (not= h1 h2)]
@@ -72,15 +75,19 @@
 (defn update-velocity [[x y vx vy] vel1 vel2]
   [x y (+ vx vel1) (+ vy vel2)])
 
-(defn next-point-xy [[x y vx vy]]
-  [(+ x vx) (+ y vy)])
-
 (defn to-line [hailstone vx vy]
   (let [hailstone (update-velocity hailstone vx vy)
-        next-hailstone (next-point-xy hailstone)]
+        next-hailstone (next-point hailstone)]
     (compute-line hailstone next-hailstone)))
 
-(defn all-hailstones-colide-at [hailstones vx vy]
+(defn all-hailstones-colide-at
+  "Given the new velocity on x and y axis (or x and z, it does not matter) 
+   check if all hailstones converge to the same point. 
+   (which is the starting point of the rock).
+   
+   If they converge to the same point, them the anwser on xy or xz axis is the 
+   point it converge and the inverse of the vx vy vz velocities"
+  [hailstones [vx vy]]
   (loop [hailstones hailstones
          colide-at nil
          ;; this is just so we can speed up, 
@@ -95,29 +102,29 @@
             hrest (rest (rest hailstones))]
         (when (and h1-line h2-line)
           (when-let [intersect (intersect h1-line h2-line)]
-            (let [intersect-at (conj intersect vx vy)]
-              (cond (nil? colide-at) (recur hrest (conj intersect vx vy) (inc speed-up))
-                    (= intersect-at colide-at) (recur hrest intersect-at (inc speed-up))))))))))
+            (let [intersect-at (conj intersect vx vy)
+                  speed-up (inc speed-up)]
+              (cond (nil? colide-at) (recur hrest intersect-at speed-up)
+                    (= intersect-at colide-at) (recur hrest intersect-at  speed-up)))))))))
 
 (defn velocities []
-  (let [velocities (range -300 200)]
-    (for [vx velocities
-          vy velocities
-          :when (or (not (zero? vx))
-                    (not (zero? vy)))]
-      [vx vy])))
+  (for [vx (range -300 200)
+        vy (range -300 200)
+        :when (or (not (zero? vx))
+                  (not (zero? vy)))]
+    [vx vy]))
 
 (defn relative-rock-finding
   "Changes hailstones velocity and check if all hailstones colide in the same point"
   [hailstones]
   (->> (velocities)
-       (keep (fn [[vx vy]] (all-hailstones-colide-at hailstones vx vy)))
+       (keep #(all-hailstones-colide-at hailstones %))
        (first)))
 
 (defn raw->x-y [[x y _z vx vy _vz]] [x y vx vy])
 (defn raw->x-z [[x _y z vx _vy vz]] [x z vx vz])
 
-(defn part1 
+(defn part1
   "Compare every line to each other, if line intersects and that 
    intersection happen after the starting point of both lines and inside the predetermine zone we count that."
   [inp rng]
