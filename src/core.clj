@@ -115,6 +115,9 @@
 (defn reject [pred coll]
   (filter #(not (pred %)) coll))
 
+(defn rejectv [pred coll]
+  (filterv #(not (pred %)) coll))
+
 (defn sum [coll]
   (reduce + coll))
 
