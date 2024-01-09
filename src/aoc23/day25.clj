@@ -11,12 +11,9 @@
        (map #(str/split % #"\:|\s"))
        (map (fn [[key _ & vals]] [key (set vals)]))
        (into {})
-       (c/then [m]
-               (merge-with into (c/revert-map m #{}) m))
+       (c/then [m] (merge-with into (c/revert-map m #{}) m))
        (map (fn [[key vals]] [key (vec vals)]))
        (into {})))
-
-(parse exp1-input)
 
 (defn contraction
   "Contract a edge between two nodes
@@ -25,13 +22,18 @@
    B           >-contract->     B
    "
   [m n1 n2]
-  (let [cluster-name n1
+  (let [cluster-name (str n1 "-" n2)
         e1 (get m n1)
         e2 (get m n2)
-        cluster-edges (c/rejectv #{n1 n2} (into e1 e2))]
-    (-> m
-        (assoc cluster-name cluster-edges)
-        (dissoc n2))))
+        cluster-edges (c/rejectv #{n1 n2} (into e1 e2))
+        m (-> m
+              (assoc cluster-name cluster-edges)
+              (dissoc n1)
+              (dissoc n2))]
+    (->> m
+         (map (fn [[key vals]]
+                [key (map #(get {n1 cluster-name n2 cluster-name} % %) vals)]))
+         (into {}))))
 
 ;; A - B
 ;; |   |
@@ -77,14 +79,27 @@
 
 (defn krager [g]
   (loop [g g]
-    (c/insp g)
     (if (= 2 (count g))
-      g
+      (when (= 3 (count (first (vals g))))
+        g)
       (let [edge-start (rand-nth (keys g))
             edge-end (rand-nth (g edge-start))
             g (contraction g edge-start edge-end)]
         (recur g)))))
 
+(defn part1 [inp]
+  (loop [g (parse inp)]
+    (c/insp ".")
+    (if-let [g-reduced (krager g)]
+      (->> g-reduced
+           (keys)
+           (map #(str/split % #"-"))
+           (map count)
+           (reduce *))
+      (recur g))))
 
-(krager node1)
-
+(comment
+  (assert (= 54 (part1 exp1-input)))
+  (assert (= 543834 (part1 part1-input)))
+  ;; there is no part 2 - it's done
+  )
