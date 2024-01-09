@@ -40,6 +40,7 @@
    B           >-contract->     B
 
    Other examples are like:
+
    Example 1: 
 
       A - B
@@ -51,13 +52,13 @@
       CD
 
    Example 2:
-    B - A
-    | / |
-    D - C
-    --contract-- C and D
-    A - B
-    || /
-    CD
+      B - A
+      | / |
+      D - C
+   --contract-- C and D
+      A - B
+      || /
+      CD
   "
   [m n1 n2]
   (let [cluster-name (str n1 "-" n2)
@@ -75,7 +76,10 @@
 (contraction node1 "d" "c")
 (contraction node2 "d" "c")
 
-(defn krager [g]
+(defn krager 
+  "Krager's algorithm to find minimal cut, we are specifically check for 3 edges.
+   https://en.wikipedia.org/wiki/Karger%27s_algorithm"
+  [g]
   (loop [g g]
     (if (= 2 (count g))
       (when (= 3 (count (first (vals g))))
